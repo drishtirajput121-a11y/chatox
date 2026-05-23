@@ -1,0 +1,67 @@
+.box {
+  display: flex;
+  gap: 12px;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-1);
+  background: transparent;
+  padding: 4px 0;
+}
+
+.textarea::placeholder { color: var(--text-3); }
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.counter {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+
+.counter.warn { color: #BA7517; }
+.counter.over { color: var(--red); font-weight: 600; }
+
+.postBtn {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 7px 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 72px;
+  justify-content: center;
+}
+
+.postBtn:hover:not(:disabled) { opacity: 0.85; }
+.postBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.error {
+  font-size: 0.82rem;
+  color: var(--red);
+}
