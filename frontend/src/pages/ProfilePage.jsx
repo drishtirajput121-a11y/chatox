@@ -36,17 +36,30 @@ export default function ProfilePage() {
   }, [username])
 
   const handleFollow = async () => {
-    if (followLoading) return
+    if (!profile || followLoading) return
+    
+    const wasFollowing = profile.is_following
+    
+    // Optimistic update
+    setProfile((p) => ({
+      ...p,
+      is_following: !wasFollowing,
+      followers_count: (p.followers_count || 0) + (wasFollowing ? -1 : 1),
+    }))
+
     setFollowLoading(true)
     try {
-      const { data } = await usersAPI.toggleFollow(username)
+      await usersAPI.toggleFollow(username)
+    } catch {
+      // Revert if API fails
       setProfile((p) => ({
         ...p,
-        is_following: data.is_following,
-        followers_count: data.followers_count ?? p.followers_count,
+        is_following: wasFollowing,
+        followers_count: (p.followers_count || 0) + (wasFollowing ? 1 : -1),
       }))
-    } catch {}
-    finally { setFollowLoading(false) }
+    } finally { 
+      setFollowLoading(false) 
+    }
   }
 
   const handleDelete = (id) => setTweets((t) => t.filter((x) => x.id !== id))
@@ -82,7 +95,6 @@ export default function ProfilePage() {
             <button
               className={profile?.is_following ? styles.followingBtn : styles.followBtn}
               onClick={handleFollow}
-              disabled={followLoading}
             >
               {profile?.is_following ? 'Following' : 'Follow'}
             </button>

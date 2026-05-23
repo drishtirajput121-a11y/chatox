@@ -12,7 +12,7 @@ export default function ExplorePage() {
   useEffect(() => {
     tweetsAPI.list()
       .then(({ data }) => setTweets(Array.isArray(data) ? data : data.results ?? []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false))
   }, [])
 
@@ -38,7 +38,7 @@ export default function ExplorePage() {
       </header>
 
       <div className={eStyles.searchBar}>
-        <span className={eStyles.searchIcon}>🔍</span>
+        <span className={eStyles.searchIcon}></span>
         <input
           className={eStyles.searchInput}
           type="search"

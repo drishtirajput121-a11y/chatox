@@ -100,7 +100,10 @@ export default function TweetCard({ tweet, onDelete, onLikeToggle }) {
             <span>{tweet.likes_count ?? 0}</span>
           </button>
 
-          <button className={styles.actionBtn} onClick={goToTweet}>
+          <button className={styles.actionBtn} onClick={(e) => {
+            e.stopPropagation()
+            goToTweet()
+          }}>
             <span className={styles.actionIcon}>◎</span>
             <span>Reply</span>
           </button>
