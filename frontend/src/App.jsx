@@ -11,6 +11,8 @@ import ExplorePage from './pages/ExplorePage'
 import NotificationsPage from './pages/NotificationsPage'
 import SettingsPage from './pages/SettingsPage'
 
+import { useThemeStore } from './context/themeStore'
+
 function RequireAuth({ children }) {
   const { user, loading } = useAuthStore()
   if (loading) return <div style={{ display:'flex', justifyContent:'center', alignItems:'center', height:'100vh' }}><div className="spinner" /></div>
@@ -24,11 +26,13 @@ function GuestOnly({ children }) {
 }
 
 export default function App() {
-  const init = useAuthStore((s) => s.init)
+  const initAuth = useAuthStore((s) => s.init)
   const logout = useAuthStore((s) => s.logout)
+  const initTheme = useThemeStore((s) => s.init)
 
   useEffect(() => {
-    init()
+    initAuth()
+    initTheme()
     window.addEventListener('auth:logout', logout)
     return () => window.removeEventListener('auth:logout', logout)
   }, [])

@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { tweetsAPI } from '../api/client'
 import TweetCard from '../components/TweetCard'
 import styles from './Page.module.css'
-import eStyles from './ExplorePage.module.css'
 
 export default function ExplorePage() {
   const [tweets, setTweets] = useState([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [searchParams] = useSearchParams()
+  
+  const query = searchParams.get('q') || ''
 
   useEffect(() => {
+    setLoading(true)
     tweetsAPI.list()
       .then(({ data }) => setTweets(Array.isArray(data) ? data : data.results ?? []))
       .catch(() => { })
@@ -17,12 +20,14 @@ export default function ExplorePage() {
   }, [])
 
   const filtered = tweets.filter((t) =>
-    !search.trim() ||
-    t.content?.toLowerCase().includes(search.toLowerCase()) ||
-    t.author?.username?.toLowerCase().includes(search.toLowerCase())
+    !query.trim() ||
+    t.content?.toLowerCase().includes(query.toLowerCase()) ||
+    t.author?.username?.toLowerCase().includes(query.toLowerCase()) ||
+    (t.author?.first_name && t.author.first_name.toLowerCase().includes(query.toLowerCase()))
   )
 
   const handleDelete = (id) => setTweets((t) => t.filter((x) => x.id !== id))
+  
   const handleLikeToggle = (id, data) => {
     setTweets((prev) =>
       prev.map((t) =>
@@ -34,27 +39,21 @@ export default function ExplorePage() {
   return (
     <div className={styles.page}>
       <header className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Explore</h1>
+        <h1 className={styles.pageTitle}>
+          {query ? `Search results for "${query}"` : 'Explore'}
+        </h1>
       </header>
-
-      <div className={eStyles.searchBar}>
-        <span className={eStyles.searchIcon}></span>
-        <input
-          className={eStyles.searchInput}
-          type="search"
-          placeholder="Search Chatox"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
 
       {loading && <div className={styles.center}><div className="spinner" /></div>}
 
       {!loading && filtered.length === 0 && (
-        <div className={styles.empty}><p>No results found.</p></div>
+        <div className={styles.empty}>
+          <p className={styles.emptyText1}>No results found.</p>
+          <p className={styles.emptyText2}>Try searching for something else or explore more Chatos!</p>
+        </div>
       )}
 
-      {filtered.map((tweet) => (
+      {!loading && filtered.map((tweet) => (
         <TweetCard
           key={tweet.id}
           tweet={tweet}

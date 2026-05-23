@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../context/authStore'
 import styles from './Page.module.css'
+import { FaReact } from 'react-icons/fa'
 
 export default function LoginPage() {
   const { login } = useAuthStore()
@@ -33,11 +34,11 @@ export default function LoginPage() {
     <div className={styles.authWrap}>
       <div className={styles.authCard}>
         <div className={styles.authLogo}>
-          <span className={styles.authDot} />
-          Chatox
+          <FaReact className={styles.reactLogo} />
+          <span>Chatox</span>
         </div>
 
-        <h1 className={styles.authHeading}>Sign in</h1>
+        <h1 className={styles.authHeading}>Sign in to Chatox</h1>
 
         {error && <div className={styles.formError}>{error}</div>}
 

@@ -3,6 +3,14 @@ import { tweetsAPI } from '../api/client'
 import { useAuthStore } from '../context/authStore'
 import { Avatar } from './TweetCard'
 import styles from './ComposeBox.module.css'
+import {
+  HiPhoto,
+  HiListBullet,
+  HiFaceSmile,
+  HiCalendarDays,
+  HiMapPin
+} from 'react-icons/hi2'
+import { MdOutlineGifBox } from 'react-icons/md'
 
 const MAX_CHARS = 280
 
@@ -43,7 +51,7 @@ export default function ComposeBox({ onPost }) {
       <div className={styles.right}>
         <textarea
           className={styles.textarea}
-          placeholder="What's happening?"
+          placeholder="What's happening?!"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKey}
@@ -51,17 +59,43 @@ export default function ComposeBox({ onPost }) {
           maxLength={MAX_CHARS + 50}
         />
         {error && <p className={styles.error}>{error}</p>}
+        
         <div className={styles.footer}>
-          <span className={`${styles.counter} ${remaining < 20 ? styles.warn : ''} ${isOverLimit ? styles.over : ''}`}>
-            {remaining}
-          </span>
-          <button
-            className={styles.postBtn}
-            onClick={handleSubmit}
-            disabled={isEmpty || isOverLimit || loading}
-          >
-            {loading ? <span className="spinner" style={{ width:16, height:16, borderWidth:2 }} /> : 'Chato'}
-          </button>
+          <div className={styles.actionIcons}>
+            <button className={styles.iconBtn} title="Media" type="button">
+              <HiPhoto />
+            </button>
+            <button className={styles.iconBtn} title="GIF" type="button">
+              <MdOutlineGifBox style={{ fontSize: '1.25rem' }} />
+            </button>
+            <button className={styles.iconBtn} title="Poll" type="button">
+              <HiListBullet />
+            </button>
+            <button className={styles.iconBtn} title="Emoji" type="button">
+              <HiFaceSmile />
+            </button>
+            <button className={styles.iconBtn} title="Schedule" type="button">
+              <HiCalendarDays />
+            </button>
+            <button className={styles.iconBtn} title="Location" type="button">
+              <HiMapPin />
+            </button>
+          </div>
+
+          <div className={styles.submitSection}>
+            {content.length > 0 && (
+              <span className={`${styles.counter} ${remaining < 20 ? styles.warn : ''} ${isOverLimit ? styles.over : ''}`}>
+                {remaining}
+              </span>
+            )}
+            <button
+              className={styles.postBtn}
+              onClick={handleSubmit}
+              disabled={isEmpty || isOverLimit || loading}
+            >
+              {loading ? <span className="spinner" style={{ width: 14, height: 14, borderTopColor: '#fff', margin: '0 auto' }} /> : 'Post'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

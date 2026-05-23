@@ -1,18 +1,22 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { usersAPI, tweetsAPI } from '../api/client'
 import { useAuthStore } from '../context/authStore'
 import TweetCard from '../components/TweetCard'
 import { Avatar } from '../components/TweetCard'
 import styles from './Page.module.css'
+import { HiArrowLeft } from 'react-icons/hi2'
 
 export default function ProfilePage() {
   const { username } = useParams()
-  const { user: me } = useAuthStore()
+  const navigate = useNavigate()
+  const { user: me, updateUser } = useAuthStore()
+  
   const [profile, setProfile] = useState(null)
   const [tweets, setTweets] = useState([])
   const [loading, setLoading] = useState(true)
   const [followLoading, setFollowLoading] = useState(false)
+  const [hoveringFollow, setHoveringFollow] = useState(false)
   const [error, setError] = useState('')
 
   const isMe = me?.username === username
@@ -21,6 +25,7 @@ export default function ProfilePage() {
     let cancelled = false
     setLoading(true)
     setError('')
+    
     Promise.all([
       usersAPI.getProfile(username),
       tweetsAPI.list(username),
@@ -30,9 +35,16 @@ export default function ProfilePage() {
         setProfile(profileRes.data)
         setTweets(Array.isArray(tweetsRes.data) ? tweetsRes.data : tweetsRes.data.results ?? [])
       })
-      .catch(() => { if (!cancelled) setError('User not found') })
-      .finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
+      .catch(() => { 
+        if (!cancelled) setError('User not found') 
+      })
+      .finally(() => { 
+        if (!cancelled) setLoading(false) 
+      })
+
+    return () => { 
+      cancelled = true 
+    }
   }, [username])
 
   const handleFollow = async () => {
@@ -40,12 +52,19 @@ export default function ProfilePage() {
     
     const wasFollowing = profile.is_following
     
-    // Optimistic update
+    // 1. Optimistically update local profile state (followers count + button state)
     setProfile((p) => ({
       ...p,
       is_following: !wasFollowing,
       followers_count: (p.followers_count || 0) + (wasFollowing ? -1 : 1),
     }))
+
+    // 2. Optimistically update logged-in user following count in auth store
+    if (me) {
+      updateUser({
+        following_count: (me.following_count || 0) + (wasFollowing ? -1 : 1)
+      })
+    }
 
     setFollowLoading(true)
     try {
@@ -57,12 +76,18 @@ export default function ProfilePage() {
         is_following: wasFollowing,
         followers_count: (p.followers_count || 0) + (wasFollowing ? 1 : -1),
       }))
+      if (me) {
+        updateUser({
+          following_count: (me.following_count || 0) + (wasFollowing ? 1 : -1)
+        })
+      }
     } finally { 
       setFollowLoading(false) 
     }
   }
 
   const handleDelete = (id) => setTweets((t) => t.filter((x) => x.id !== id))
+  
   const handleLikeToggle = (id, data) => {
     setTweets((prev) =>
       prev.map((t) =>
@@ -76,10 +101,15 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.pageHeader}>
-        <div>
-          <h1 className={styles.pageTitle}>{profile?.username}</h1>
-          <p style={{ fontSize:'0.78rem', color:'var(--text-3)' }}>{tweets.length} Chatos</p>
+      <header className={styles.profileHeader}>
+        <button className={styles.backBtn} onClick={() => navigate('/')} title="Back">
+          <HiArrowLeft />
+        </button>
+        <div className={styles.headerInfo}>
+          <h1 className={styles.pageTitle}>
+            {profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : profile?.username}
+          </h1>
+          <p className={styles.tweetCountMeta}>{tweets.length} posts</p>
         </div>
       </header>
 
@@ -89,24 +119,32 @@ export default function ProfilePage() {
       <div className={styles.profileMeta}>
         <div className={styles.profileAvatarRow}>
           <div className={styles.profileAvatar}>
-            <Avatar username={username} size={72} />
+            <Avatar username={username} size={110} />
           </div>
           {!isMe && (
             <button
               className={profile?.is_following ? styles.followingBtn : styles.followBtn}
               onClick={handleFollow}
+              onMouseEnter={() => setHoveringFollow(true)}
+              onMouseLeave={() => setHoveringFollow(false)}
             >
-              {profile?.is_following ? 'Following' : 'Follow'}
+              {profile?.is_following 
+                ? (hoveringFollow ? 'Unfollow' : 'Following') 
+                : 'Follow'}
             </button>
           )}
         </div>
 
-        <p className={styles.profileName}>
+        <h2 className={styles.profileName}>
           {profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : profile?.username}
-        </p>
+        </h2>
         <p className={styles.profileHandle}>@{profile?.username}</p>
 
-        {profile?.bio && <p className={styles.profileBio}>{profile.bio}</p>}
+        {profile?.bio ? (
+          <p className={styles.profileBio}>{profile.bio}</p>
+        ) : (
+          <p className={styles.profileBioPlaceholder}>No bio description added.</p>
+        )}
 
         <div className={styles.profileStats}>
           <div className={styles.statItem}>
@@ -120,9 +158,16 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      <div className={styles.profileTabs}>
+        <div className={`${styles.profileTab} ${styles.activeProfileTab}`}>
+          Posts
+          <span className={styles.tabIndicator} />
+        </div>
+      </div>
+
       {tweets.length === 0 ? (
         <div className={styles.empty}>
-          <p>No Chatos yet.</p>
+          <p>No posts yet.</p>
         </div>
       ) : (
         tweets.map((tweet) => (

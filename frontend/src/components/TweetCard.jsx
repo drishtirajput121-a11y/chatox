@@ -4,11 +4,29 @@ import { tweetsAPI } from '../api/client'
 import { useAuthStore } from '../context/authStore'
 import { formatDistanceToNow } from 'date-fns'
 import styles from './TweetCard.module.css'
+import {
+  HiHeart,
+  HiOutlineHeart,
+  HiChatBubbleLeft,
+  HiLink,
+  HiTrash,
+  HiShare
+} from 'react-icons/hi2'
 
-function Avatar({ username, size = 42 }) {
-  const colors = ['#E1F5EE','#E6F1FB','#FAEEDA','#FBEAF0','#EEEDFE','#FAECE7']
-  const textColors = ['#0F6E56','#185FA5','#854F0B','#993556','#3C3489','#993C1D']
-  const idx = username.charCodeAt(0) % colors.length
+function Avatar({ username, size = 40 }) {
+  const colors = [
+    'var(--accent-light)',
+    'rgba(0, 186, 124, 0.1)',
+    'rgba(249, 24, 128, 0.1)',
+    'rgba(144, 99, 246, 0.1)'
+  ]
+  const textColors = [
+    'var(--accent)',
+    'var(--green)',
+    'var(--red)',
+    '#9063f6'
+  ]
+  const idx = username ? username.charCodeAt(0) % colors.length : 0
   return (
     <div
       className={styles.avatar}
@@ -16,10 +34,11 @@ function Avatar({ username, size = 42 }) {
         width: size, height: size,
         background: colors[idx],
         color: textColors[idx],
-        fontSize: size * 0.36,
+        fontSize: size * 0.38,
+        fontWeight: '700',
       }}
     >
-      {username[0].toUpperCase()}
+      {username ? username[0].toUpperCase() : '?'}
     </div>
   )
 }
@@ -28,6 +47,7 @@ export default function TweetCard({ tweet, onDelete, onLikeToggle }) {
   const { user } = useAuthStore()
   const navigate = useNavigate()
   const [likeLoading, setLikeLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const isOwner = user?.username === tweet.author?.username
   const timeAgo = tweet.created_at
@@ -54,66 +74,110 @@ export default function TweetCard({ tweet, onDelete, onLikeToggle }) {
     } catch {}
   }
 
-  const goToTweet = () => {
-    navigate(`/${tweet.author?.username}/status/${tweet.id}`)
+  const goToTweet = (focusReply = false) => {
+    navigate(`/${tweet.author?.username}/status/${tweet.id}`, {
+      state: { focusReply }
+    })
+  }
+
+  const handleCopyLink = (e) => {
+    e.stopPropagation()
+    const url = `${window.location.origin}/${tweet.author?.username}/status/${tweet.id}`
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
-    <article className={`${styles.card} fade-up`} onClick={goToTweet}>
+    <article className={`${styles.card} fade-up`} onClick={() => goToTweet(false)}>
       <Link
         to={`/${tweet.author?.username}`}
         onClick={(e) => e.stopPropagation()}
+        className={styles.avatarWrapper}
       >
         <Avatar username={tweet.author?.username || '?'} />
       </Link>
 
       <div className={styles.body}>
         <div className={styles.header}>
-          <Link
-            to={`/${tweet.author?.username}`}
-            className={styles.authorName}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {tweet.author?.username}
-          </Link>
-          <span className={styles.handle}>@{tweet.author?.username}</span>
-          <span className={styles.dot}>·</span>
-          <span className={styles.time}>{timeAgo}</span>
+          <div className={styles.authorMeta}>
+            <Link
+              to={`/${tweet.author?.username}`}
+              className={styles.authorName}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {tweet.author?.first_name || tweet.author?.username}
+            </Link>
+            <span className={styles.handle}>@{tweet.author?.username}</span>
+            <span className={styles.dot}>·</span>
+            <span className={styles.time} title={tweet.created_at}>{timeAgo}</span>
+          </div>
           {isOwner && (
             <button className={styles.deleteBtn} onClick={handleDelete} title="Delete">
-              ✕
+              <HiTrash />
             </button>
           )}
         </div>
 
         <p className={styles.content}>{tweet.content}</p>
 
+        {tweet.image && (
+          <div className={styles.imageWrapper} onClick={(e) => e.stopPropagation()}>
+            <img src={tweet.image} alt="Tweet media" className={styles.tweetImage} />
+          </div>
+        )}
+
         <div className={styles.actions}>
+          {/* Reply */}
+          <button 
+            className={`${styles.actionBtn} ${styles.replyBtn}`} 
+            onClick={(e) => {
+              e.stopPropagation()
+              goToTweet(true)
+            }}
+          >
+            <span className={styles.actionIcon}><HiChatBubbleLeft /></span>
+            <span className={styles.actionLabel}>Reply</span>
+          </button>
+
+          {/* Like */}
           <button
-            className={`${styles.actionBtn} ${tweet.is_liked ? styles.liked : ''}`}
+            className={`${styles.actionBtn} ${styles.likeBtn} ${tweet.is_liked ? styles.liked : ''}`}
             onClick={handleLike}
             disabled={likeLoading}
           >
             <span className={styles.actionIcon}>
-              {tweet.is_liked ? '♥' : '♡'}
+              {tweet.is_liked ? <HiHeart /> : <HiOutlineHeart />}
             </span>
-            <span>{tweet.likes_count ?? 0}</span>
+            <span className={styles.actionLabel}>{tweet.likes_count ?? 0}</span>
           </button>
 
-          <button className={styles.actionBtn} onClick={(e) => {
-            e.stopPropagation()
-            goToTweet()
-          }}>
-            <span className={styles.actionIcon}>◎</span>
-            <span>Reply</span>
+          {/* Copy Link */}
+          <button 
+            className={`${styles.actionBtn} ${styles.copyBtn}`} 
+            onClick={handleCopyLink}
+            title="Copy link to Chato"
+          >
+            <span className={styles.actionIcon}><HiLink /></span>
+            <span className={styles.actionLabel}>{copied ? 'Copied!' : 'Copy'}</span>
           </button>
 
-          <button className={styles.actionBtn} onClick={(e) => {
-            e.stopPropagation()
-            navigator.clipboard.writeText(window.location.origin + `/${tweet.author?.username}/status/${tweet.id}`)
-          }}>
-            <span className={styles.actionIcon}>⎘</span>
-            <span>Copy</span>
+          {/* Share Placeholder */}
+          <button 
+            className={`${styles.actionBtn} ${styles.shareBtn}`} 
+            onClick={(e) => {
+              e.stopPropagation()
+              if (navigator.share) {
+                navigator.share({
+                  title: 'Chatox Post',
+                  text: tweet.content,
+                  url: `${window.location.origin}/${tweet.author?.username}/status/${tweet.id}`
+                }).catch(() => {})
+              }
+            }}
+            title="Share"
+          >
+            <span className={styles.actionIcon}><HiShare /></span>
           </button>
         </div>
       </div>

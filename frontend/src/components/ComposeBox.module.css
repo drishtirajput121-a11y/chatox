@@ -1,15 +1,16 @@
 .box {
   display: flex;
   gap: 12px;
-  padding: 1rem 1.1rem;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .right {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .textarea {
@@ -17,51 +18,100 @@
   border: none;
   outline: none;
   resize: none;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 1.2rem;
+  line-height: 1.4;
   color: var(--text-1);
   background: transparent;
   padding: 4px 0;
 }
 
-.textarea::placeholder { color: var(--text-3); }
+.textarea::placeholder {
+  color: var(--text-2);
+  font-size: 1.2rem;
+}
 
 .footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.actionIcons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  outline: none;
+}
+
+.iconBtn:hover {
+  background-color: var(--accent-light);
+}
+
+.submitSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .counter {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-family: var(--font-mono);
-  color: var(--text-3);
+  color: var(--text-2);
 }
 
-.counter.warn { color: #BA7517; }
-.counter.over { color: var(--red); font-weight: 600; }
+.counter.warn {
+  color: #BA7517;
+}
+
+.counter.over {
+  color: var(--red);
+  font-weight: 700;
+}
 
 .postBtn {
-  background: var(--green);
-  color: #fff;
+  background: var(--accent);
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-full);
-  padding: 7px 20px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  transition: opacity 0.15s;
+  padding: 8px 20px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
   display: flex;
   align-items: center;
   gap: 6px;
-  min-width: 72px;
+  min-width: 76px;
   justify-content: center;
+  cursor: pointer;
 }
 
-.postBtn:hover:not(:disabled) { opacity: 0.85; }
-.postBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.postBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.postBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .error {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   color: var(--red);
 }

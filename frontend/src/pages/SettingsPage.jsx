@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import { usersAPI } from '../api/client'
 import { useAuthStore } from '../context/authStore'
+import { useThemeStore } from '../context/themeStore'
 import styles from './Page.module.css'
+import { HiSun, HiMoon } from 'react-icons/hi2'
 
 export default function SettingsPage() {
   const { user, updateUser } = useAuthStore()
+  const { theme, setTheme } = useThemeStore()
+  
   const [form, setForm] = useState({
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',
@@ -42,24 +46,51 @@ export default function SettingsPage() {
         <h1 className={styles.pageTitle}>Settings</h1>
       </header>
 
-      <div style={{ padding:'1.5rem 1.1rem', maxWidth:480 }}>
-        <p style={{ fontSize:'0.82rem', color:'var(--text-3)', marginBottom:'1.25rem' }}>
-          @{user?.username} — Edit your profile info
+      <div className={styles.settingsContent}>
+        <p className={styles.settingsSub}>
+          @{user?.username} — Customize your experience and account info
         </p>
 
         {error && <div className={styles.formError}>{error}</div>}
         {success && (
-          <div style={{ background:'var(--green-light)', color:'var(--green-dark)', borderRadius:'var(--radius-sm)', padding:'9px 12px', fontSize:'0.85rem', marginBottom:'1rem' }}>
+          <div className={styles.formSuccess}>
             Profile updated successfully!
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className={styles.settingsForm}>
+          {/* Theme Settings Section */}
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Display Theme</label>
+            <div className={styles.themeSelectorRow}>
+              <button
+                type="button"
+                className={`${styles.themeOptionBtn} ${theme === 'dark' ? styles.activeThemeOption : ''}`}
+                onClick={() => setTheme('dark')}
+              >
+                <HiMoon className={styles.themeOptionIcon} />
+                <span>Dark Mode</span>
+              </button>
+              
+              <button
+                type="button"
+                className={`${styles.themeOptionBtn} ${theme === 'light' ? styles.activeThemeOption : ''}`}
+                onClick={() => setTheme('light')}
+              >
+                <HiSun className={styles.themeOptionIcon} />
+                <span>Light Mode</span>
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.divider} />
+
+          {/* Account Settings Section */}
           {[
-            { key:'first_name', label:'First name' },
-            { key:'last_name', label:'Last name' },
-            { key:'email', label:'Email', type:'email' },
-          ].map(({ key, label, type='text' }) => (
+            { key: 'first_name', label: 'First name' },
+            { key: 'last_name', label: 'Last name' },
+            { key: 'email', label: 'Email', type: 'email' },
+          ].map(({ key, label, type = 'text' }) => (
             <div className={styles.formGroup} key={key}>
               <label className={styles.label}>{label}</label>
               <input
@@ -78,14 +109,14 @@ export default function SettingsPage() {
               rows={3}
               value={form.bio}
               onChange={set('bio')}
-              style={{ resize:'vertical' }}
+              style={{ resize: 'vertical' }}
               placeholder="Tell people about yourself"
             />
           </div>
 
           <button className={styles.submitBtn} type="submit" disabled={loading}>
-            {loading && <span className="spinner" style={{ width:16, height:16, borderWidth:2, borderColor:'rgba(255,255,255,0.3)', borderTopColor:'#fff' }} />}
-            {loading ? 'Saving…' : 'Save changes'}
+            {loading && <span className="spinner" style={{ width: 14, height: 14, borderTopColor: '#fff' }} />}
+            {loading ? 'Saving Changes…' : 'Save changes'}
           </button>
         </form>
       </div>
