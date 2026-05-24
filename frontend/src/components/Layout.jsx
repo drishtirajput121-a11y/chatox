@@ -46,7 +46,7 @@ export default function Layout() {
     { to: '/', icon: HiHome, label: 'Home', exact: true },
     { to: '/explore', icon: HiMagnifyingGlass, label: 'Explore' },
     { to: '/notifications', icon: HiBell, label: 'Notifications' },
-    { to: '/notifications', icon: HiChatBubbleLeftRight, label: 'Chat' },
+    { to: '/chat', icon: HiChatBubbleLeftRight, label: 'Chat' },
     { to: user ? `/${user.username}` : '#', icon: HiUserPlus, label: 'Follow' },
     { to: user ? `/${user.username}` : '#', icon: HiUser, label: 'Profile' },
     { to: '/settings', icon: HiCog6Tooth, label: 'Settings' },
@@ -85,9 +85,9 @@ export default function Layout() {
 
         <div className={styles.sidebarBottom}>
           {/* Quick theme toggle */}
-          <button 
-            className={styles.themeToggleBtn} 
-            onClick={toggle} 
+          <button
+            className={styles.themeToggleBtn}
+            onClick={toggle}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
             {theme === 'dark' ? <HiSun /> : <HiMoon />}
@@ -122,9 +122,9 @@ export default function Layout() {
       <aside className={styles.rightSidebar}>
         <div className={styles.searchWrapper}>
           <HiMagnifyingGlass className={styles.searchIcon} />
-          <input 
-            type="text" 
-            placeholder="Search Chatox" 
+          <input
+            type="text"
+            placeholder="Search Chatox"
             className={styles.searchInput}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -136,7 +136,7 @@ export default function Layout() {
 
         <div className={styles.trendingCard}>
           <h2 className={styles.trendingTitle}>What's happening</h2>
-          
+
           <div className={styles.trendItem}>
             <div className={styles.trendMeta}>Technology · Trending</div>
             <div className={styles.trendName}>#ReactJS</div>

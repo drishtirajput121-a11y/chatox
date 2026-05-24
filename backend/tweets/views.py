@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from .models import Tweet, Like
 from .serializers import TweetSerializer
 from notifications.models import Notification
+from .models import TweetImage
+
 
 class IsAuthorOrReadOnly:
     def has_object_permission(self, request, view, obj):
@@ -35,7 +37,9 @@ class TweetListCreateView(generics.ListCreateAPIView):
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        tweet = serializer.save(author=self.request.user)
+        for img in self.request.FILES.getlist('images'):
+            TweetImage.objects.create(tweet=tweet, image=img)
 
 class TweetDetailView(generics.RetrieveDestroyAPIView):
     queryset = Tweet.objects.select_related('author').prefetch_related('likes')

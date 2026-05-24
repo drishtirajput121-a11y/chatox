@@ -44,3 +44,7 @@ class Like(models.Model):
 
     class Meta:
         unique_together = ('user', 'tweet')  # prevents duplicate likes
+
+class TweetImage(models.Model):
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='tweet_images/')
