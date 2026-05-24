@@ -2,23 +2,21 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../context/authStore'
 import { useThemeStore } from '../context/themeStore'
 import styles from './Layout.module.css'
+import useChatNotifications from '../hooks/useChatNotifications'
+import MessageToast from './MessageToast'
+import useChatNotifStore from '../context/chatNotifStore'
 import {
-  HiHome,
-  HiMagnifyingGlass,
-  HiBell,
-  HiCog6Tooth,
-  HiUser,
-  HiUserPlus,
-  HiChatBubbleLeftRight,
-  HiArrowRightOnRectangle,
-  HiSun,
-  HiMoon
+  HiHome, HiMagnifyingGlass, HiBell, HiCog6Tooth, HiUser,
+  HiChatBubbleLeftRight, HiArrowRightOnRectangle, HiSun, HiMoon
 } from 'react-icons/hi2'
 import { FaReact } from 'react-icons/fa'
 
 export default function Layout() {
+  useChatNotifications()
+
   const { user, logout } = useAuthStore()
   const { theme, toggle } = useThemeStore()
+  const { unreadCount, clearUnread } = useChatNotifStore()  // ← add
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -28,11 +26,7 @@ export default function Layout() {
   }
 
   const handlePostClick = () => {
-    // If not on Home page, navigate to Home
-    if (location.pathname !== '/') {
-      navigate('/')
-    }
-    // After navigation or if already on Home, focus the tweet text area
+    if (location.pathname !== '/') navigate('/')
     setTimeout(() => {
       const textarea = document.querySelector('textarea')
       if (textarea) {
@@ -53,6 +47,7 @@ export default function Layout() {
 
   return (
     <div className={styles.shell}>
+
       {/* Left Sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.logo} onClick={() => navigate('/')}>
@@ -61,19 +56,46 @@ export default function Layout() {
         </div>
 
         <nav className={styles.nav}>
-          {navItems.map(({ to, icon: Icon, label, exact }) => (
-            <NavLink
-              key={label + to}
-              to={to}
-              end={exact}
-              className={({ isActive }) =>
-                `${styles.navItem} ${isActive ? styles.active : ''}`
-              }
-            >
-              <span className={styles.navIcon}><Icon /></span>
-              <span className={styles.navLabel}>{label}</span>
-            </NavLink>
-          ))}
+          {navItems.map(({ to, icon: Icon, label, exact }) => {
+            const isChat = label === 'Chat'
+            return (
+              <NavLink
+                key={label + to}
+                to={to}
+                end={exact}
+                className={({ isActive }) =>
+                  `${styles.navItem} ${isActive ? styles.active : ''}`
+                }
+                onClick={() => isChat && clearUnread()}
+              >
+                <span className={styles.navIcon} style={{ position: 'relative' }}>
+                  <Icon />
+                  {isChat && unreadCount > 0 && (
+                    <span style={{
+                      position: 'absolute',
+                      top: -6,
+                      right: -6,
+                      minWidth: 16,
+                      height: 16,
+                      background: '#10b981',
+                      color: '#fff',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      borderRadius: 99,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0 3px',
+                      lineHeight: 1,
+                    }}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </span>
+                <span className={styles.navLabel}>{label}</span>
+              </NavLink>
+            )
+          })}
 
           {user && (
             <button className={styles.postBtn} onClick={handlePostClick}>
@@ -83,7 +105,6 @@ export default function Layout() {
         </nav>
 
         <div className={styles.sidebarBottom}>
-          {/* Quick theme toggle */}
           <button
             className={styles.themeToggleBtn}
             onClick={toggle}
@@ -112,7 +133,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* Main */}
       <main className={styles.main}>
         <Outlet />
       </main>
@@ -135,31 +156,26 @@ export default function Layout() {
 
         <div className={styles.trendingCard}>
           <h2 className={styles.trendingTitle}>What's happening</h2>
-
           <div className={styles.trendItem}>
             <div className={styles.trendMeta}>Technology · Trending</div>
             <div className={styles.trendName}>#ReactJS</div>
             <div className={styles.trendCount}>124,582 posts</div>
           </div>
-
           <div className={styles.trendItem}>
             <div className={styles.trendMeta}>Web Development · Trending</div>
             <div className={styles.trendName}>#ViteJS</div>
             <div className={styles.trendCount}>84,203 posts</div>
           </div>
-
           <div className={styles.trendItem}>
             <div className={styles.trendMeta}>Programming · Trending</div>
             <div className={styles.trendName}>#Zustand</div>
             <div className={styles.trendCount}>12,940 posts</div>
           </div>
-
           <div className={styles.trendItem}>
             <div className={styles.trendMeta}>Trending in India</div>
             <div className={styles.trendName}>#DjangoREST</div>
             <div className={styles.trendCount}>31,509 posts</div>
           </div>
-
           <div className={styles.trendItem}>
             <div className={styles.trendMeta}>Software Engineering</div>
             <div className={styles.trendName}>#WebDev</div>
@@ -175,6 +191,10 @@ export default function Layout() {
           <span>© 2026 Chatox Corp.</span>
         </footer>
       </aside>
+
+      {/* Toast — outside all sidebars so it overlays everything */}
+      <MessageToast />
+
     </div>
   )
 }

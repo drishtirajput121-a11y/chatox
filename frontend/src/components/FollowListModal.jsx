@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usersAPI } from '../api/client'
 import { useAuthStore } from '../context/authStore'
+import { HiUserGroup, HiMagnifyingGlass } from 'react-icons/hi2'
 
 function Avatar({ username, size = 44 }) {
     const palettes = [
@@ -169,7 +170,7 @@ export default function FollowListModal({ username, type, onClose }) {
 
                     {!loading && !error && users.length === 0 && (
                         <div className="text-center py-12 text-gray-400">
-                            <p className="text-3xl mb-2">{type === 'followers' ? '👥' : '🔍'}</p>
+                            <p className="text-3xl mb-2">{type === 'followers' ? <HiUserGroup /> : <HiMagnifyingGlass />}</p>
                             <p className="text-sm">
                                 {type === 'followers'
                                     ? 'No followers yet.'

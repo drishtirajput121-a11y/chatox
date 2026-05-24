@@ -10,12 +10,12 @@ import TweetDetailPage from './pages/TweetDetailPage'
 import ExplorePage from './pages/ExplorePage'
 import NotificationsPage from './pages/NotificationsPage'
 import SettingsPage from './pages/SettingsPage'
-
+import ChatPage from './pages/ChatPage'
 import { useThemeStore } from './context/themeStore'
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuthStore()
-  if (loading) return <div style={{ display:'flex', justifyContent:'center', alignItems:'center', height:'100vh' }}><div className="spinner" /></div>
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><div className="spinner" /></div>
   return user ? children : <Navigate to="/login" replace />
 }
 
@@ -49,6 +49,8 @@ export default function App() {
           <Route path="settings" element={<SettingsPage />} />
           <Route path=":username" element={<ProfilePage />} />
           <Route path=":username/status/:pk" element={<TweetDetailPage />} />
+          <Route path="chat" element={<ChatPage />} />
+          <Route path="chat/:username" element={<ChatPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
