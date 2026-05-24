@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from .serializers import RegisterSerializer, UserSerializer
-
+from notifications.models import Notification
 User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
@@ -49,4 +49,9 @@ class FollowView(APIView):
             request.user.following.remove(target)
             return Response({'status': 'unfollowed'})
         request.user.following.add(target)
+        Notification.objects.get_or_create(
+    recipient=target,
+    sender=request.user,
+    notification_type=Notification.FOLLOW,
+)
         return Response({'status': 'followed'})

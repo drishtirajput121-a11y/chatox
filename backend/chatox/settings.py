@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'tweets',
+    'notifications',
 ]
 
 MIDDLEWARE = [

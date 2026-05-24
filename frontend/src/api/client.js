@@ -89,3 +89,5 @@ export const tweetsAPI = {
   delete: (pk) => api.delete(`/tweets/${pk}/`),
   toggleLike: (pk) => api.post(`/tweets/${pk}/like/`),
 }
+
+export default api

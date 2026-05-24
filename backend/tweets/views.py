@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .models import Tweet, Like
 from .serializers import TweetSerializer
+from notifications.models import Notification
 
 class IsAuthorOrReadOnly:
     def has_object_permission(self, request, view, obj):
@@ -55,8 +56,29 @@ class LikeToggleView(APIView):
             tweet = Tweet.objects.get(pk=pk)
         except Tweet.DoesNotExist:
             return Response({'error': 'Tweet not found'}, status=404)
-        like, created = Like.objects.get_or_create(user=request.user, tweet=tweet)
+
+        like, created = Like.objects.get_or_create(
+            user=request.user,
+            tweet=tweet
+        )
+
         if not created:
             like.delete()
-            return Response({'status': 'unliked', 'likes_count': tweet.likes_count})
-        return Response({'status': 'liked', 'likes_count': tweet.likes_count})
+            return Response({
+                'status': 'unliked',
+                'likes_count': tweet.likes_count
+            })
+
+        # create notification when tweet is liked
+        if tweet.author != request.user:
+            Notification.objects.create(
+                recipient=tweet.author,
+                sender=request.user,
+                notification_type=Notification.LIKE,
+                tweet=tweet,
+            )
+
+        return Response({
+            'status': 'liked',
+            'likes_count': tweet.likes_count
+        })
