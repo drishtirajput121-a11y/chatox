@@ -4,6 +4,7 @@ import { tweetsAPI } from '../api/client'
 import { useAuthStore } from '../context/authStore'
 import { formatDistanceToNow } from 'date-fns'
 import styles from './TweetCard.module.css'
+import PollDisplay from './PollDisplay'
 
 import {
   HiHeart,
@@ -213,6 +214,12 @@ export default function TweetCard({
             ))}
 
           </div>
+        )}
+        {tweet.poll && (
+          <PollDisplay
+            poll={tweet.poll}
+            tweetAuthor={tweet.author?.username}
+          />
         )}
 
         <div className={styles.actions}>

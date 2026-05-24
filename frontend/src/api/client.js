@@ -86,6 +86,7 @@ export const tweetsAPI = {
   list: (username) => api.get('/tweets/', { params: username ? { username } : {} }),
   get: (pk) => api.get(`/tweets/${pk}/`),
   create: (data) => api.post('/tweets/', data),
+  votePoll: (optionId) => api.post(`/tweets/poll/vote/${optionId}/`),
   delete: (pk) => api.delete(`/tweets/${pk}/`),
   toggleLike: (pk) => api.post(`/tweets/${pk}/like/`),
 }

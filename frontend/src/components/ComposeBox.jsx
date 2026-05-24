@@ -3,6 +3,7 @@ import { tweetsAPI } from '../api/client'
 import { useAuthStore } from '../context/authStore'
 import { Avatar } from './TweetCard'
 import styles from './ComposeBox.module.css'
+import PollComposer from './PollComposer'
 
 import {
   HiPhoto,
@@ -20,11 +21,15 @@ import MediaPreviews from './MediaPreviews'
 const MAX_CHARS = 280
 
 export default function ComposeBox({ onPost }) {
+
   const { user } = useAuthStore()
 
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // poll state
+  const [poll, setPoll] = useState(null)
 
   const {
     previews,
@@ -40,34 +45,82 @@ export default function ComposeBox({ onPost }) {
   const isOverLimit = remaining < 0
   const isEmpty = content.trim().length === 0
 
+  // open poll
+  const openPoll = () => {
+    setPoll({
+      options: ['', ''],
+      duration_hours: 24
+    })
+
+    // can't have poll + images together
+    clear()
+  }
+
   const handleSubmit = async () => {
-    if ((isEmpty && !previews.length) || isOverLimit || loading) return
+
+    if (
+      (isEmpty && !previews.length && !poll) ||
+      isOverLimit ||
+      loading
+    ) return
 
     setLoading(true)
     setError('')
 
     try {
+
       const formData = new FormData()
 
-      formData.append('content', content.trim())
+      formData.append(
+        'content',
+        content.trim()
+      )
 
-      // attach selected images
+      // attach images
       previews.forEach((preview) => {
-        formData.append('images', preview.file)
+        formData.append(
+          'images',
+          preview.file
+        )
       })
 
-      const { data } = await tweetsAPI.create(formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+      // attach poll
+      if (poll) {
+
+        const validOptions =
+          poll.options.filter(
+            (option) => option.trim()
+          )
+
+        if (validOptions.length >= 2) {
+
+          formData.append(
+            'poll',
+            JSON.stringify({
+              options: validOptions,
+              duration_hours:
+                poll.duration_hours,
+            })
+          )
+        }
+      }
+
+      const { data } =
+        await tweetsAPI.create(formData, {
+          headers: {
+            'Content-Type':
+              'multipart/form-data',
+          },
+        })
 
       setContent('')
       clear()
+      setPoll(null)
 
       onPost?.(data)
 
     } catch (e) {
+
       setError(
         e.response?.data?.detail ||
         'Something went wrong'
@@ -79,7 +132,11 @@ export default function ComposeBox({ onPost }) {
   }
 
   const handleKey = (e) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+
+    if (
+      e.key === 'Enter' &&
+      (e.metaKey || e.ctrlKey)
+    ) {
       handleSubmit()
     }
   }
@@ -88,14 +145,18 @@ export default function ComposeBox({ onPost }) {
 
   return (
     <div className={styles.box}>
+
       <Avatar username={user.username} />
 
       <div className={styles.right}>
+
         <textarea
           className={styles.textarea}
           placeholder="What's happening?!"
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) =>
+            setContent(e.target.value)
+          }
           onKeyDown={handleKey}
           rows={3}
           maxLength={MAX_CHARS + 50}
@@ -106,6 +167,15 @@ export default function ComposeBox({ onPost }) {
           previews={previews}
           onRemove={removeImage}
         />
+
+        {/* poll composer */}
+        {poll && (
+          <PollComposer
+            poll={poll}
+            onChange={setPoll}
+            onRemove={() => setPoll(null)}
+          />
+        )}
 
         {/* errors */}
         {error && (
@@ -121,44 +191,63 @@ export default function ComposeBox({ onPost }) {
         )}
 
         <div className={styles.footer}>
+
           <div className={styles.actionIcons}>
 
             {/* hidden file input */}
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
+              accept="
+                image/jpeg,
+                image/png,
+                image/gif,
+                image/webp
+              "
               multiple
               className="hidden"
               onChange={handleFiles}
             />
 
+            {/* media */}
             <button
               className={styles.iconBtn}
               title="Media"
               type="button"
               onClick={openPicker}
-              disabled={previews.length >= 4}
+              disabled={
+                previews.length >= 4 ||
+                !!poll
+              }
             >
               <HiPhoto />
             </button>
 
+            {/* gif */}
             <button
               className={styles.iconBtn}
               title="GIF"
               type="button"
             >
-              <MdOutlineGifBox style={{ fontSize: '1.25rem' }} />
+              <MdOutlineGifBox
+                style={{
+                  fontSize: '1.25rem'
+                }}
+              />
             </button>
 
+            {/* poll */}
             <button
               className={styles.iconBtn}
               title="Poll"
               type="button"
+              onClick={openPoll}
+              disabled={previews.length > 0}
             >
               <HiListBullet />
             </button>
 
+            {/* emoji */}
             <button
               className={styles.iconBtn}
               title="Emoji"
@@ -167,6 +256,7 @@ export default function ComposeBox({ onPost }) {
               <HiFaceSmile />
             </button>
 
+            {/* schedule */}
             <button
               className={styles.iconBtn}
               title="Schedule"
@@ -175,6 +265,7 @@ export default function ComposeBox({ onPost }) {
               <HiCalendarDays />
             </button>
 
+            {/* location */}
             <button
               className={styles.iconBtn}
               title="Location"
@@ -182,15 +273,23 @@ export default function ComposeBox({ onPost }) {
             >
               <HiMapPin />
             </button>
+
           </div>
 
           <div className={styles.submitSection}>
+
             {content.length > 0 && (
               <span
                 className={`
                   ${styles.counter}
-                  ${remaining < 20 ? styles.warn : ''}
-                  ${isOverLimit ? styles.over : ''}
+                  ${remaining < 20
+                    ? styles.warn
+                    : ''
+                  }
+                  ${isOverLimit
+                    ? styles.over
+                    : ''
+                  }
                 `}
               >
                 {remaining}
@@ -201,7 +300,11 @@ export default function ComposeBox({ onPost }) {
               className={styles.postBtn}
               onClick={handleSubmit}
               disabled={
-                (isEmpty && !previews.length) ||
+                (
+                  isEmpty &&
+                  !previews.length &&
+                  !poll
+                ) ||
                 isOverLimit ||
                 loading
               }
@@ -220,6 +323,7 @@ export default function ComposeBox({ onPost }) {
                 'Post'
               )}
             </button>
+
           </div>
         </div>
       </div>

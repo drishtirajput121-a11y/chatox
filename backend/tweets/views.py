@@ -3,9 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .models import Tweet, Like
-from .serializers import TweetSerializer
+from .serializers import TweetSerializer, PollSerializer
 from notifications.models import Notification
-from .models import TweetImage
+from .models import Tweet, TweetImage, Poll, PollOption, PollVote
+import json
+from django.utils import timezone
+from datetime import timedelta
 
 
 class IsAuthorOrReadOnly:
@@ -40,6 +43,53 @@ class TweetListCreateView(generics.ListCreateAPIView):
         tweet = serializer.save(author=self.request.user)
         for img in self.request.FILES.getlist('images'):
             TweetImage.objects.create(tweet=tweet, image=img)
+
+        poll_data = self.request.data.get('poll')
+        if poll_data:
+            if isinstance(poll_data, str):
+                poll_data = json.loads(poll_data)  # FormData sends strings
+            duration = int(poll_data.get('duration_hours', 24))
+            poll = Poll.objects.create(
+                tweet=tweet,
+                duration_hours=duration,
+                ends_at=timezone.now() + timedelta(hours=duration),
+            )
+            for i, opt in enumerate(poll_data.get('options', [])):
+                if opt.strip():
+                    PollOption.objects.create(poll=poll, text=opt.strip(), order=i)
+
+
+class PollVoteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, option_id):
+        try:
+            option = PollOption.objects.select_related('poll').get(pk=option_id)
+        except PollOption.DoesNotExist:
+            return Response({'error': 'Option not found'}, status=404)
+
+        if option.poll.is_expired():
+            return Response({'error': 'Poll has ended'}, status=400)
+
+        # check if user already voted in this poll
+        existing_vote = PollVote.objects.filter(
+            option__poll=option.poll, user=request.user
+        ).first()
+
+        if existing_vote:
+            if existing_vote.option == option:
+                # clicked same option — remove vote (unvote)
+                existing_vote.delete()
+            else:
+                # clicked different option — switch vote
+                existing_vote.option = option
+                existing_vote.save()
+        else:
+            # first time voting
+            PollVote.objects.create(option=option, user=request.user)
+
+        poll = option.poll
+        return Response(PollSerializer(poll, context={'request': request}).data)
 
 class TweetDetailView(generics.RetrieveDestroyAPIView):
     queryset = Tweet.objects.select_related('author').prefetch_related('likes')
