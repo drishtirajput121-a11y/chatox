@@ -1,114 +1,141 @@
-# Chatox
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"/>
+  <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Django%20Channels-0C4B33?style=for-the-badge&logo=django&logoColor=white"/>
+  <img src="https://img.shields.io/badge/WebSockets-010101?style=for-the-badge&logo=socketdotio&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Celery-37814A?style=for-the-badge&logo=celery&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Redis-D82C20?style=for-the-badge&logo=redis&logoColor=white"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white"/>
+</p>
 
-A modern full-stack social media platform inspired by real-time communication systems. Chatox delivers seamless social interaction with live messaging, dynamic feeds, notifications, media sharing, polls, scheduling, and responsive UI experiences.
+# Chatox — Real-Time Social Media Platform
 
----
+Chatox is a modern full-stack social media platform engineered around realtime communication, scalable async processing, and responsive frontend architecture. The application combines React.js frontend rendering with Django REST APIs, Django Channels powered WebSockets, Celery background workers, Redis event streaming, and PostgreSQL relational persistence.
 
-## Features
-
-- Real-time messaging using WebSockets
-- Live notifications system
-- Tweet/Post creation with image uploads
-- Poll creation and voting
-- Scheduled posts
-- Follow / unfollow users
-- Like and reply system
-- Dark / Light mode support
-- Responsive modern UI
-- Profile pages and user feeds
-- Async background task processing
-- Authentication and authorization
+The platform delivers realtime social interaction features including instant messaging, live notifications, tweet feeds, media uploads, polls, scheduling systems, user engagement tracking, and responsive multi-device rendering.
 
 ---
 
-## Tech Stack
+# Platform Demonstrations
 
-### Frontend
-- React.js
-- React Router DOM
-- Zustand
-- Axios
-- CSS Modules
-- Tailwind CSS
+## Authentication Workflow
 
-### Backend
-- Django
-- Django REST Framework
-- Django Channels
-- WebSockets
-- Celery
-- Redis
-- PostgreSQL
+The authentication system provides JWT-secured login and registration with protected API routing and persistent session handling.
+
+<div align="center">
+  <img src="demo/login.png" width="48%">
+  <img src="demo/register.png" width="48%">
+</div>
 
 ---
 
-## Architecture
+## Feed Interface & Tweet Composer
 
-### Real-Time Communication
-Implemented real-time bidirectional communication using:
+This section demonstrates the responsive tweet feed architecture, media upload previews, poll creation system, and realtime interaction components.
 
-- Django Channels
-- ASGI
-- WebSockets
-- Redis Channel Layer
+<img src="demo/feed.gif" width="100%" height="auto">
 
-This enables:
+---
+
+## Realtime Messaging & Notifications
+
+Realtime communication is implemented using Django Channels + WebSockets enabling instant message delivery and live notification broadcasting.
+
+<img src="demo/chat.gif" width="100%" height="auto">
+
+---
+
+# Why Chatox?
+
+Most social platforms become overloaded with unnecessary UI complexity and fragmented realtime systems. Chatox focuses on scalable realtime communication with clean modular architecture.
+
+### Core Design Goals
+
+1. **Realtime First Architecture**  
+   WebSockets enable instant bidirectional communication without inefficient polling loops.
+
+2. **Scalable Backend Infrastructure**  
+   Redis-backed Channels layers and Celery workers allow asynchronous task distribution and scalable event handling.
+
+3. **Responsive Modern UI**  
+   Optimized React component architecture with responsive layouts for desktop and mobile devices.
+
+4. **Modular Full-Stack Design**  
+   Independent frontend/backend separation using DRF APIs improves maintainability and deployment flexibility.
+
+---
+
+# Core Feature Architecture
+
+| Functional Area | Feature Description | Key Technology |
+|---|---|---|
+| Authentication System | JWT login, protected routes, token persistence | Django REST, SimpleJWT |
+| Realtime Messaging | Bidirectional websocket communication | Django Channels, WebSockets |
+| Async Task Processing | Notification queues and background workers | Celery, Redis |
+| Tweet Feed System | Dynamic social feed rendering | React.js, DRF |
+| Media Uploads | Multi-image tweet attachments with previews | React Hooks, Django Media |
+| Poll System | Interactive poll creation and voting | PostgreSQL, React State |
+| Live Notifications | Instant follow/like notifications | Channels, Redis |
+| User Relationships | Follow / unfollow architecture | PostgreSQL Relations |
+| Responsive UI | Mobile + desktop adaptive layouts | CSS Modules, Tailwind |
+| State Management | Global auth and UI state handling | Zustand |
+
+---
+
+# Realtime Communication Architecture
+
+Chatox uses ASGI-powered websocket infrastructure through Django Channels.
+
+### WebSocket Features
+
 - Instant messaging
-- Live updates
-- Realtime notifications
+- Live notifications
+- Realtime feed updates
+- Online/offline user states
+- Typing indicators
+- Event broadcasting
 
 ---
 
-### Background Tasks
-Integrated Celery + Redis for asynchronous task processing:
+# Async Task Queue System
 
-- Notification handling
+Celery workers handle asynchronous background jobs separated from synchronous API execution.
+
+### Celery Responsibilities
+
+- Notification delivery
 - Email jobs
-- Scheduled tasks
-- Future scalability for analytics and media processing
+- Delayed tasks
+- Scheduled jobs
+- Background processing
+
+### Redis Usage
+
+Redis acts as:
+
+- Celery broker
+- Channel layer backend
+- Temporary cache store
+- Event pub/sub layer
 
 ---
 
-## Key Functionalities
+# Database Design
 
-### Authentication System
-- JWT Authentication
-- Secure login/signup flow
-- Protected routes and APIs
+PostgreSQL manages structured relational data including:
 
-### Tweet System
-- Create, delete, and interact with posts
-- Image uploads with previews
-- Poll support
-- Scheduled publishing
-- Location support
-
-### Social Features
-- Follow / unfollow users
-- Like system
-- Reply threads
-- Share links
-- Copy tweet links
-
-### Notifications
-- Like notifications
-- Follow notifications
-- Realtime delivery support
-
----
-
-## Database
-
-PostgreSQL is used for:
-- User management
-- Tweet storage
-- Polls
+- Users
+- Tweets
+- Likes
+- Replies
 - Notifications
-- Relationships and interactions
+- Polls
+- Relationships
+- Message persistence
 
 ---
 
-## Project Structure
+# Project Structure
 
 ```bash
 chatox/
@@ -119,72 +146,109 @@ chatox/
 │   ├── chat/
 │   ├── notifications/
 │   ├── config/
+│   └── manage.py
 │
 ├── frontend/
 │   ├── src/
 │   ├── components/
-│   ├── pages/
 │   ├── hooks/
+│   ├── pages/
 │   ├── api/
+│   └── assets/
 │
 └── README.md
 ```
 
 ---
 
-## Installation
+# API Endpoints
 
-### Clone Repository
+## Authentication
 
-```bash
-git clone https://github.com/your-username/chatox.git
-cd chatox
-```
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/register/` | Register new account |
+| POST | `/api/token/` | Obtain JWT tokens |
+| POST | `/api/token/refresh/` | Refresh expired token |
 
 ---
 
-## Backend Setup
+## Tweets
 
-### Create Virtual Environment
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/tweets/` | Fetch tweet feed |
+| POST | `/api/tweets/` | Create new tweet |
+| POST | `/api/tweets/:id/like/` | Toggle like |
+| DELETE | `/api/tweets/:id/` | Delete tweet |
+
+---
+
+## Users
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/users/:username/` | Fetch user profile |
+| POST | `/api/follow/:username/` | Follow/unfollow user |
+
+---
+
+## Notifications
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/notifications/` | Fetch notifications |
+| POST | `/api/notifications/read/` | Mark notifications read |
+
+---
+
+# Frontend Stack
+
+- React.js
+- Vite
+- React Router DOM
+- Zustand
+- Axios
+- Tailwind CSS
+- CSS Modules
+- React Icons
+
+---
+
+# Backend Stack
+
+- Django
+- Django REST Framework
+- Django Channels
+- Celery
+- Redis
+- PostgreSQL
+
+---
+
+# Local Setup
+
+## Backend
 
 ```bash
+cd backend
+
 python -m venv env
 source env/bin/activate
-```
 
-### Install Dependencies
-
-```bash
 pip install -r requirements.txt
-```
 
-### Run PostgreSQL & Redis
-
-```bash
-sudo service postgresql start
-sudo service redis-server start
-```
-
-### Apply Migrations
-
-```bash
 python manage.py migrate
-```
 
-### Start Backend
-
-```bash
 python manage.py runserver
 ```
 
 ---
 
-## Frontend Setup
+## Redis
 
 ```bash
-cd frontend
-npm install
-npm run dev
+sudo service redis-server start
 ```
 
 ---
@@ -197,28 +261,40 @@ celery -A config worker -l info
 
 ---
 
-## Future Improvements
+## Frontend
 
-- Stories feature
+```bash
+cd frontend
+
+npm install
+npm run dev
+```
+
+---
+
+# Future Improvements
+
+- Stories system
 - Video uploads
-- Realtime typing indicators
-- AI-powered recommendations
-- Infinite scrolling
-- Push notifications
-- Hashtag trending system
 - Voice/video calling
+- AI recommendations
+- Infinite scrolling feeds
+- Push notifications
+- Trending hashtags
+- Group chats
 
 ---
 
-## Screenshots
+# Author
 
-Add your project screenshots here.
+**Drishti Rajput**
+
+GitHub: https://github.com/your-username
+
+LinkedIn: https://linkedin.com/in/your-profile
 
 ---
 
-## Author
-
-Drishti Rajput
-
+# License
 
 This project is developed for learning, experimentation, and portfolio purposes.
