@@ -78,6 +78,8 @@ export const usersAPI = {
   updateMe: (data) => api.patch('/users/me/', data),
   getProfile: (username) => api.get(`/users/${username}/`),
   toggleFollow: (username) => api.post(`/users/${username}/follow/`),
+  getFollowers: (username) => api.get(`/users/${username}/followers/`),  // NEW
+  getFollowing: (username) => api.get(`/users/${username}/following/`),  // NEW
 }
 
 /* --- Tweets --- */

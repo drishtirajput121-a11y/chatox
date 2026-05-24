@@ -6,6 +6,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from .serializers import RegisterSerializer, UserSerializer
 from notifications.models import Notification
+from django.shortcuts import get_object_or_404
+
 User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
@@ -28,6 +30,20 @@ class MeView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     def get_object(self):
         return self.request.user
+ 
+    def update(self, request, *args, **kwargs):
+        # Handle image removal — frontend sends empty string to clear a field
+        for field in ('avatar', 'banner'):
+            if field in request.data and request.data[field] == '':
+                file_field = getattr(request.user, field)
+                if file_field:
+                    file_field.delete(save=False)
+                setattr(request.user, field, None)
+                request.user.save(update_fields=[field])
+ 
+        kwargs['partial'] = True   # always treat as partial update (same as PATCH)
+        return super().update(request, *args, **kwargs)
+ 
 
 class ProfileView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
@@ -55,3 +71,38 @@ class FollowView(APIView):
     notification_type=Notification.FOLLOW,
 )
         return Response({'status': 'followed'})
+
+class FollowersListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username):
+        user = get_object_or_404(User, username=username)
+        followers = user.followers.all()  # adjust if your related_name differs
+        data = [
+            {
+                'username': u.username,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'is_following': request.user.following.filter(pk=u.pk).exists()
+            }
+            for u in followers
+        ]
+        return Response(data)
+
+
+class FollowingListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username):
+        user = get_object_or_404(User, username=username)
+        following = user.following.all()  # adjust if your related_name differs
+        data = [
+            {
+                'username': u.username,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'is_following': request.user.following.filter(pk=u.pk).exists()
+            }
+            for u in following
+        ]
+        return Response(data)

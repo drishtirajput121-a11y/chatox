@@ -47,7 +47,6 @@ export default function Layout() {
     { to: '/explore', icon: HiMagnifyingGlass, label: 'Explore' },
     { to: '/notifications', icon: HiBell, label: 'Notifications' },
     { to: '/chat', icon: HiChatBubbleLeftRight, label: 'Chat' },
-    { to: user ? `/${user.username}` : '#', icon: HiUserPlus, label: 'Follow' },
     { to: user ? `/${user.username}` : '#', icon: HiUser, label: 'Profile' },
     { to: '/settings', icon: HiCog6Tooth, label: 'Settings' },
   ]
