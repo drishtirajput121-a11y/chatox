@@ -288,13 +288,3 @@ npm run dev
 # Author
 
 **Drishti Rajput**
-
-GitHub: https://github.com/your-username
-
-LinkedIn: https://linkedin.com/in/your-profile
-
----
-
-# License
-
-This project is developed for learning, experimentation, and portfolio purposes.
