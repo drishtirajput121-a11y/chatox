@@ -13,6 +13,9 @@ class Tweet(models.Model):
         null=True,
         blank=True
     )
+    location = models.CharField(max_length=100, blank=True, default='')
+    scheduled_at = models.DateTimeField(null=True, blank=True)
+    is_published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

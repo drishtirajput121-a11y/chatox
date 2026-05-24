@@ -64,8 +64,12 @@ class TweetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tweet
-        fields = ['id','author','content','images','poll','created_at','likes_count','is_liked']
-        read_only_fields = ['id','author','created_at','poll']
+        fields = [
+            'id', 'author', 'content', 'images', 'poll',
+            'location', 'scheduled_at', 'is_published',
+            'created_at', 'likes_count', 'is_liked'
+        ]
+        read_only_fields = ['id', 'author', 'created_at', 'poll', 'is_published']
 
     def get_is_liked(self, obj):
         request = self.context.get('request')

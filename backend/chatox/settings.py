@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'users',
     'tweets',
     'notifications',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -106,3 +107,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_TIMEZONE = 'UTC'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

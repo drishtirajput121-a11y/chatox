@@ -9,6 +9,7 @@ from .models import Tweet, TweetImage, Poll, PollOption, PollVote
 import json
 from django.utils import timezone
 from datetime import timedelta
+from .tasks import publish_scheduled_tweet
 
 
 class IsAuthorOrReadOnly:
@@ -25,22 +26,38 @@ class FeedView(generics.ListAPIView):
         user = self.request.user
         ids = list(user.following.values_list('id', flat=True)) + [user.id]
         return Tweet.objects.filter(
-            author_id__in=ids
-        ).select_related('author').prefetch_related('likes')
+            author_id__in=ids,
+            is_published=True,       # ← only published
+        ).select_related('author').prefetch_related('likes', 'images', 'poll__options')
 
 class TweetListCreateView(generics.ListCreateAPIView):
     serializer_class = TweetSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
     def get_queryset(self):
         username = self.request.query_params.get('username')
-        qs = Tweet.objects.select_related('author').prefetch_related('likes')
+        qs = Tweet.objects.filter(
+            is_published=True        # ← only published
+        ).select_related('author').prefetch_related('likes', 'images', 'poll__options')
         if username:
             return qs.filter(author__username=username)
         return qs
 
     def perform_create(self, serializer):
         tweet = serializer.save(author=self.request.user)
+        scheduled_at_str = self.request.data.get('scheduled_at')
+        is_published = True
+        scheduled_at = None
+
+        if scheduled_at_str:
+            from dateutil.parser import parse as parse_date
+            scheduled_at = parse_date(scheduled_at_str)
+            is_published = False  # hide until publish time
+            
+        tweet = serializer.save(
+            author=self.request.user,
+            is_published=is_published,
+            scheduled_at=scheduled_at,
+            location=self.request.data.get('location', ''),
+        )
         for img in self.request.FILES.getlist('images'):
             TweetImage.objects.create(tweet=tweet, image=img)
 
@@ -57,7 +74,12 @@ class TweetListCreateView(generics.ListCreateAPIView):
             for i, opt in enumerate(poll_data.get('options', [])):
                 if opt.strip():
                     PollOption.objects.create(poll=poll, text=opt.strip(), order=i)
-
+        # schedule celery task to auto-publish
+        if scheduled_at and not is_published:
+            publish_scheduled_tweet.apply_async(
+                args=[tweet.id],
+                eta=scheduled_at,  # run exactly at this time
+            )
 
 class PollVoteView(APIView):
     permission_classes = [IsAuthenticated]

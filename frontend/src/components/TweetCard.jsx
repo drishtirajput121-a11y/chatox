@@ -5,6 +5,7 @@ import { useAuthStore } from '../context/authStore'
 import { formatDistanceToNow } from 'date-fns'
 import styles from './TweetCard.module.css'
 import PollDisplay from './PollDisplay'
+import { HiMapPin } from 'react-icons/hi2'
 
 import {
   HiHeart,
@@ -189,7 +190,12 @@ export default function TweetCard({
         <p className={styles.content}>
           {tweet.content}
         </p>
-
+        {tweet.location && (
+          <div className="flex items-center gap-1 mt-1">
+            <HiMapPin className="w-3.5 h-3.5 text-gray-500" />
+            <span className="text-xs text-gray-500">{tweet.location}</span>
+          </div>
+        )}
         {/* MULTIPLE IMAGES */}
         {tweet.images?.length > 0 && (
           <div
