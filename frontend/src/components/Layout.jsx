@@ -11,7 +11,7 @@ import {
   HiChatBubbleLeftRight, HiArrowRightOnRectangle, HiSun, HiMoon
 } from 'react-icons/hi2'
 import { FaReact } from 'react-icons/fa'
-
+import FooterCards from '../components/FooterCards'
 /* ── TrendingCard ── */
 function TrendingCard() {
   const [trends, setTrends] = useState([])
@@ -261,22 +261,7 @@ export default function Layout() {
         <TrendingCard />
 
         {/* Footer */}
-        <footer className="flex flex-wrap gap-x-3 gap-y-2 text-xs text-gray-400
-          px-1 mt-auto">
-          <a href="#" className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-            Terms of Service
-          </a>
-          <a href="#" className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-            Privacy Policy
-          </a>
-          <a href="#" className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-            Cookie Policy
-          </a>
-          <a href="#" className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-            More
-          </a>
-          <span>© 2026 Chatox Corp.</span>
-        </footer>
+        <FooterCards />
       </aside>
 
       <MessageToast />
