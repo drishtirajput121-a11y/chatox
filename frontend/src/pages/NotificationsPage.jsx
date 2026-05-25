@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import api from '../api/client'
 import { HiBell, HiHeart, HiUserPlus, HiChatBubbleLeft, HiArrowPath } from 'react-icons/hi2'
 import PageLogo from '../components/PageLogo'
@@ -37,18 +38,20 @@ function NotificationCard({ n }) {
   const Icon = config.icon
 
   return (
-    <div className={`flex items-start gap-3 px-4 md:px-5 py-4
-      border-b border-gray-200 dark:border-gray-800
-      cursor-pointer transition-colors
-      ${n.is_read
-        ? 'bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-900/50'
-        : 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-50/80 dark:hover:bg-blue-900/20'
-      }`}
+    <Link
+      to={`/${n.sender.username}`}
+      className={`flex items-start gap-3 px-4 md:px-5 py-4
+        border-b border-gray-200 dark:border-gray-800
+        transition-colors cursor-pointer
+        ${n.is_read
+          ? 'bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-900/50'
+          : 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-50/80 dark:hover:bg-blue-900/20'
+        }`}
     >
-      {/* avatar + icon badge */}
+      {/* Avatar + icon badge */}
       <div className="relative flex-shrink-0">
-        <div className={`w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center
-          text-sm font-medium ${color}`}>
+        <div className={`w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center
+          justify-center text-sm font-medium ${color}`}>
           {initials}
         </div>
         <div className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full
@@ -58,10 +61,12 @@ function NotificationCard({ n }) {
         </div>
       </div>
 
-      {/* text */}
+      {/* Text */}
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-900 dark:text-white">
-          <span className="font-semibold">{n.sender.username}</span>
+          <span className="font-semibold hover:underline">
+            {n.sender.username}
+          </span>
           {' '}{config.label}
         </p>
         {n.tweet?.content && (
@@ -73,11 +78,11 @@ function NotificationCard({ n }) {
         <p className="text-xs text-gray-400 mt-1">{timeAgo(n.created_at)}</p>
       </div>
 
-      {/* unread dot */}
+      {/* Unread dot */}
       {!n.is_read && (
         <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />
       )}
-    </div>
+    </Link>
   )
 }
 
@@ -105,28 +110,32 @@ export default function NotificationsPage() {
           text-gray-900 dark:text-white">
           Notifications
         </h1>
-        {notifications.some(n => !n.is_read) && (
-          <button
-            onClick={() => setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))}
-            className="text-xs text-blue-500 font-medium px-3 py-1.5
-              rounded-full hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
-          >
-            Mark all read
-          </button>
-        )}
-        <PageLogo />
+        <div className="flex items-center gap-3">
+          {notifications.some(n => !n.is_read) && (
+            <button
+              onClick={() => setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))}
+              className="text-xs text-blue-500 font-medium px-3 py-1.5
+                rounded-full hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
+            >
+              Mark all read
+            </button>
+          )}
+          <PageLogo />
+        </div>
       </header>
 
       {/* Loading */}
       {loading && (
         <div className="flex justify-center items-center py-16">
-          <div className="w-6 h-6 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-gray-200 border-t-blue-500
+            rounded-full animate-spin" />
         </div>
       )}
 
       {/* Empty */}
       {!loading && notifications.length === 0 && (
-        <div className="flex flex-col items-center justify-center gap-4 py-20 px-8 text-center">
+        <div className="flex flex-col items-center justify-center gap-4
+          py-20 px-8 text-center">
           <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-900
             flex items-center justify-center">
             <HiBell className="w-8 h-8 text-gray-400" />

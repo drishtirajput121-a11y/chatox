@@ -40,7 +40,7 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="flex items-center gap-3 text-[1.5rem] md:text-[1.6rem]
           font-extrabold tracking-tight mb-6 text-[var(--accent)]">
-          <FaReact className="text-[2rem] md:text-[2.2rem] animate-spin [animation-duration:20s]" />
+          <img src="/chatox.png" alt="Chatox" className="w-10 h-10" />
           <span>Chatox</span>
         </div>
 

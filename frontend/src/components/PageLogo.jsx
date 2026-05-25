@@ -1,19 +1,16 @@
 import { useNavigate } from 'react-router-dom'
-import { FaReact } from 'react-icons/fa'
+import { HiHome } from 'react-icons/hi2'
 
 export default function PageLogo() {
     const navigate = useNavigate()
     return (
         <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+            className="flex items-center justify-center w-10 h-10 rounded-full
+                hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
             title="Go to Home"
         >
-            <FaReact className="text-2xl text-blue-500 animate-spin [animation-duration:20s]" />
-            <span className="text-base font-extrabold tracking-tight
-        text-gray-900 dark:text-white hidden sm:inline">
-                Chatox
-            </span>
+            <HiHome className="w-6 h-6 text-gray-900 dark:text-white" />
         </button>
     )
 }

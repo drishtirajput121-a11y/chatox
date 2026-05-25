@@ -211,7 +211,7 @@ export default function ProfilePage() {
       </header>
 
       {/* Banner */}
-      <div className="relative h-28 md:h-36 group">
+      <div className="relative h-20 md:h-28 group">
         {bannerSrc ? (
           <img src={bannerSrc} alt="Banner" className="w-full h-full object-cover" />
         ) : (
@@ -253,7 +253,7 @@ export default function ProfilePage() {
       <div className="px-3 md:px-4 pb-4 border-b border-gray-200 dark:border-gray-800">
 
         {/* Avatar row */}
-        <div className="flex items-end justify-between -mt-9 md:-mt-11 mb-3">
+        <div className="flex items-end justify-between mt-2 mb-3">
 
           {/* Avatar — smaller on mobile */}
           <div className="relative group/av w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
@@ -296,7 +296,7 @@ export default function ProfilePage() {
               onMouseEnter={() => setHoveringFollow(true)}
               onMouseLeave={() => setHoveringFollow(false)}
               disabled={followLoading}
-              className={`px-4 md:px-5 py-1.5 md:py-2 rounded-full text-sm font-semibold
+              className={`px-4 md:px-5 py-1.5 md:py-2 rounded-full text-sm self-end mb-1 font-semibold
                 border transition-all disabled:opacity-50
                 ${profile?.is_following
                   ? hoveringFollow

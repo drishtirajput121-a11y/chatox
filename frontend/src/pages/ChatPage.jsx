@@ -40,10 +40,7 @@ function ConvoItem({ convo, active, onClick }) {
             onClick={onClick}
             className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors
                 hover:bg-gray-100 dark:hover:bg-zinc-900
-                ${active
-                    ? 'bg-blue-50 dark:bg-zinc-900 border-r-2 border-blue-500'
-                    : ''
-                }`}
+                ${active ? 'bg-blue-50 dark:bg-zinc-900 border-r-2 border-blue-500' : ''}`}
         >
             <div className="relative flex-shrink-0">
                 <Avatar username={convo.username} src={convo.avatar} size={44} />
@@ -56,8 +53,12 @@ function ConvoItem({ convo, active, onClick }) {
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-baseline justify-between gap-2">
-                    <p className="font-semibold text-sm text-gray-900 dark:text-zinc-100 truncate">{displayName}</p>
-                    <span className="text-[11px] text-gray-400 dark:text-zinc-500 flex-shrink-0">{time}</span>
+                    <p className="font-semibold text-sm text-gray-900 dark:text-zinc-100 truncate">
+                        {displayName}
+                    </p>
+                    <span className="text-[11px] text-gray-400 dark:text-zinc-500 flex-shrink-0">
+                        {time}
+                    </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-zinc-500 truncate">
                     {convo.last_message || 'No messages yet'}
@@ -72,7 +73,6 @@ function SearchResultItem({ user, onClick }) {
     const displayName = user.first_name
         ? `${user.first_name} ${user.last_name || ''}`.trim()
         : user.username
-
     return (
         <button
             onClick={onClick}
@@ -82,7 +82,9 @@ function SearchResultItem({ user, onClick }) {
         >
             <Avatar username={user.username} src={user.avatar} size={40} />
             <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 dark:text-zinc-100 truncate">{displayName}</p>
+                <p className="font-semibold text-sm text-gray-900 dark:text-zinc-100 truncate">
+                    {displayName}
+                </p>
                 <p className="text-xs text-gray-500 dark:text-zinc-500">@{user.username}</p>
             </div>
             <HiPaperAirplane className="w-4 h-4 text-gray-300 dark:text-zinc-600 flex-shrink-0" />
@@ -97,7 +99,7 @@ function Bubble({ msg, isMe }) {
         : ''
     return (
         <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-1`}>
-            <div className={`max-w-[70%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed
+            <div className={`max-w-[75%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed
                 ${isMe
                     ? 'bg-blue-500 text-white rounded-br-sm'
                     : 'bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 rounded-bl-sm'
@@ -116,7 +118,8 @@ function Bubble({ msg, isMe }) {
 function TypingIndicator() {
     return (
         <div className="flex justify-start mb-1">
-            <div className="bg-gray-100 dark:bg-zinc-800 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1">
+            <div className="bg-gray-100 dark:bg-zinc-800 rounded-2xl rounded-bl-sm px-4 py-3
+                flex items-center gap-1">
                 <span className="w-2 h-2 bg-gray-400 dark:bg-zinc-500 rounded-full animate-bounce"
                     style={{ animationDelay: '0ms' }} />
                 <span className="w-2 h-2 bg-gray-400 dark:bg-zinc-500 rounded-full animate-bounce"
@@ -155,7 +158,6 @@ export default function ChatPage() {
 
     const [conversations, setConversations] = useState([])
     const [convosLoading, setConvosLoading] = useState(true)
-
     const [search, setSearch] = useState('')
     const [searchResults, setSearchResults] = useState([])
     const [searchLoading, setSearchLoading] = useState(false)
@@ -187,27 +189,18 @@ export default function ChatPage() {
 
     /* ── Search users ── */
     useEffect(() => {
-        if (!search.trim()) {
-            setSearchResults([])
-            return
-        }
+        if (!search.trim()) { setSearchResults([]); return }
         clearTimeout(searchDebounce.current)
         setSearchLoading(true)
         searchDebounce.current = setTimeout(async () => {
             try {
-                const { data } = await api.get('/chat/search-users/', {
-                    params: { q: search.trim() }
-                })
+                const { data } = await api.get('/chat/search-users/', { params: { q: search.trim() } })
                 setSearchResults(data)
-            } catch {
-                setSearchResults([])
-            } finally {
-                setSearchLoading(false)
-            }
+            } catch { setSearchResults([]) }
+            finally { setSearchLoading(false) }
         }, 300)
     }, [search])
 
-    /* ── Start chat from search ── */
     const startChat = (username) => {
         setSearch('')
         setSearchResults([])
@@ -225,12 +218,7 @@ export default function ChatPage() {
     /* ── WebSocket ── */
     useEffect(() => {
         if (!activeUser || !me) return
-
-        if (wsRef.current) {
-            wsRef.current.close()
-            wsRef.current = null
-        }
-
+        if (wsRef.current) { wsRef.current.close(); wsRef.current = null }
         setMessages([])
         setIsTyping(false)
         setWsStatus('connecting')
@@ -238,24 +226,17 @@ export default function ChatPage() {
         const token = localStorage.getItem('access_token')
         const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
         const wsHost = import.meta.env.VITE_WS_HOST || 'localhost:8000'
-        const url = `${wsProtocol}://${wsHost}/ws/chat/${activeUser}/?token=${token}`
-
-        const ws = new WebSocket(url)
+        const ws = new WebSocket(`${wsProtocol}://${wsHost}/ws/chat/${activeUser}/?token=${token}`)
         wsRef.current = ws
 
-        ws.onopen = () => {
-            setWsStatus('open')
-            loadConversations()
-        }
+        ws.onopen = () => { setWsStatus('open'); loadConversations() }
         ws.onclose = () => setWsStatus('closed')
         ws.onerror = () => setWsStatus('error')
-
         ws.onmessage = (e) => {
             const data = JSON.parse(e.data)
-            if (data.type === 'history') {
-                setMessages(data.messages)
-            } else if (data.type === 'message') {
-                setMessages((prev) => [...prev, data.message])
+            if (data.type === 'history') setMessages(data.messages)
+            else if (data.type === 'message') {
+                setMessages(prev => [...prev, data.message])
                 setIsTyping(false)
                 loadConversations()
             } else if (data.type === 'typing') {
@@ -266,22 +247,18 @@ export default function ChatPage() {
                 }
             }
         }
-
-        return () => { ws.close() }
+        return () => ws.close()
     }, [activeUser, me])
 
-    /* ── Scroll to bottom ── */
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages, isTyping])
 
-    /* ── Update URL ── */
     useEffect(() => {
         if (activeUser) navigate(`/chat/${activeUser}`, { replace: true })
         else navigate('/chat', { replace: true })
     }, [activeUser])
 
-    /* ── Send message ── */
     const sendMessage = () => {
         const content = input.trim()
         if (!content || wsRef.current?.readyState !== WebSocket.OPEN) return
@@ -292,31 +269,22 @@ export default function ChatPage() {
     }
 
     const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            sendMessage()
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
     }
 
     const handleInputChange = (e) => {
         setInput(e.target.value)
         if (wsRef.current?.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({
-                type: 'typing',
-                is_typing: e.target.value.length > 0,
-            }))
+            wsRef.current.send(JSON.stringify({ type: 'typing', is_typing: e.target.value.length > 0 }))
         }
     }
 
-    /* ── Filtered convos ── */
-    const filteredConvos = conversations.filter((c) => {
+    const filteredConvos = conversations.filter(c => {
         const q = search.toLowerCase()
-        return !q ||
-            c.username.toLowerCase().includes(q) ||
-            c.first_name?.toLowerCase().includes(q)
+        return !q || c.username.toLowerCase().includes(q) || c.first_name?.toLowerCase().includes(q)
     })
 
-    const activeConvo = conversations.find((c) => c.username === activeUser)
+    const activeConvo = conversations.find(c => c.username === activeUser)
     const activeDisplayName = activeConvo?.first_name
         ? `${activeConvo.first_name} ${activeConvo.last_name || ''}`.trim()
         : activeUser
@@ -324,23 +292,31 @@ export default function ChatPage() {
     const showSearchResults = isSearching && search.trim().length > 0
 
     return (
-        <div className="flex h-screen overflow-hidden
-            bg-white dark:bg-black
-            border-r border-gray-100 dark:border-zinc-800">
+        /*
+          KEY FIX: Use fixed positioning with pb-14 (bottom nav height) on mobile
+          so the chat doesn't get hidden behind the nav bar.
+          On desktop it's a normal flex row.
+        */
+        <div className="flex fixed inset-0 pb-14 md:pb-0 md:relative md:inset-auto
+            md:h-full bg-white dark:bg-black">
 
-            {/* ── Left panel ── */}
-            <div className={`flex flex-col flex-shrink-0 w-full md:w-72 lg:w-80
+            {/* ══ LEFT PANEL — conversation list ══ */}
+            <div className={`
+                flex flex-col w-full md:w-72 lg:w-80 flex-shrink-0
                 bg-white dark:bg-black
                 border-r border-gray-100 dark:border-zinc-800
-                ${activeUser ? 'hidden md:flex' : 'flex'}`}>
+                ${activeUser ? 'hidden md:flex' : 'flex'}
+            `}>
 
-                <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 dark:border-zinc-800">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3.5
+                    border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
                     <h1 className="font-bold text-base text-gray-900 dark:text-zinc-100">Messages</h1>
                     <PageLogo />
                 </div>
 
-                {/* Search */}
-                <div className="px-3 py-2 border-b border-gray-100 dark:border-zinc-800">
+                {/* Search bar */}
+                <div className="px-3 py-2 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
                     <div className={`flex items-center gap-2 rounded-full px-3 py-2 transition-all
                         bg-gray-100 dark:bg-zinc-900
                         ${isSearching ? 'ring-2 ring-blue-400 dark:ring-blue-500 bg-white dark:bg-black' : ''}`}>
@@ -351,7 +327,7 @@ export default function ChatPage() {
                             placeholder="Search people to message"
                             value={search}
                             onFocus={() => setIsSearching(true)}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={e => setSearch(e.target.value)}
                             className="bg-transparent text-sm outline-none flex-1
                                 text-gray-700 dark:text-zinc-300
                                 placeholder:text-gray-400 dark:placeholder:text-zinc-500"
@@ -366,7 +342,7 @@ export default function ChatPage() {
                     </div>
                 </div>
 
-                {/* List */}
+                {/* Conversation / search list */}
                 <div className="flex-1 overflow-y-auto">
                     {showSearchResults ? (
                         <>
@@ -386,7 +362,8 @@ export default function ChatPage() {
                                 </p>
                             )}
                             {searchResults.map(u => (
-                                <SearchResultItem key={u.username} user={u} onClick={() => startChat(u.username)} />
+                                <SearchResultItem key={u.username} user={u}
+                                    onClick={() => startChat(u.username)} />
                             ))}
                             {filteredConvos.length > 0 && (
                                 <>
@@ -413,8 +390,8 @@ export default function ChatPage() {
                             )}
                             {!convosLoading && conversations.length === 0 && (
                                 <div className="flex flex-col items-center gap-3 py-12 px-4 text-center">
-                                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl
-                                        bg-gray-100 dark:bg-zinc-900">🔍</div>
+                                    <div className="w-12 h-12 rounded-full flex items-center justify-center
+                                        text-2xl bg-gray-100 dark:bg-zinc-900">🔍</div>
                                     <p className="text-sm text-gray-500 dark:text-zinc-400">
                                         Search for someone above to start your first conversation
                                     </p>
@@ -430,17 +407,20 @@ export default function ChatPage() {
                 </div>
             </div>
 
-            {/* ── Right panel ── */}
-            <div className={`flex-1 flex flex-col bg-white dark:bg-black
-                ${activeUser ? 'flex' : 'hidden md:flex'}`}>
-
+            {/* ══ RIGHT PANEL — chat window ══ */}
+            <div className={`
+                flex-1 flex flex-col min-w-0
+                bg-white dark:bg-black
+                ${activeUser ? 'flex' : 'hidden md:flex'}
+            `}>
                 {!activeUser ? <EmptyChat /> : (
                     <>
-                        {/* Chat header */}
-                        <div className="flex items-center gap-3 px-4 py-3 backdrop-blur-md
-                            bg-white/90 dark:bg-black/90
+                        {/* Chat header — fixed height */}
+                        <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0
+                            backdrop-blur-md bg-white/90 dark:bg-black/90
                             border-b border-gray-100 dark:border-zinc-800">
-                            <button onClick={() => setActiveUser(null)}
+                            <button
+                                onClick={() => setActiveUser(null)}
                                 className="md:hidden w-8 h-8 flex items-center justify-center rounded-full
                                     text-gray-500 dark:text-zinc-400
                                     hover:bg-gray-100 dark:hover:bg-zinc-900">
@@ -466,8 +446,8 @@ export default function ChatPage() {
                             </Link>
                         </div>
 
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5
+                        {/* Messages — scrollable, fills remaining space */}
+                        <div className="flex-1 overflow-y-auto px-4 py-4
                             bg-gray-50 dark:bg-zinc-950">
                             {wsStatus === 'connecting' && (
                                 <div className="flex justify-center py-6">
@@ -485,15 +465,16 @@ export default function ChatPage() {
                                     No messages yet. Say hello! 👋
                                 </div>
                             )}
-                            {messages.map((msg) => (
+                            {messages.map(msg => (
                                 <Bubble key={msg.id} msg={msg} isMe={msg.sender === me?.username} />
                             ))}
                             {isTyping && <TypingIndicator />}
                             <div ref={bottomRef} />
                         </div>
 
-                        {/* Input */}
-                        <div className="px-4 py-3 border-t border-gray-100 dark:border-zinc-800
+                        {/* Input — fixed at bottom, never scrolls away */}
+                        <div className="flex-shrink-0 px-4 py-3
+                            border-t border-gray-100 dark:border-zinc-800
                             bg-white dark:bg-black">
                             <div className="flex items-end gap-2 rounded-2xl px-4 py-2
                                 bg-gray-100 dark:bg-zinc-900">
@@ -504,22 +485,22 @@ export default function ChatPage() {
                                     onChange={handleInputChange}
                                     onKeyDown={handleKeyDown}
                                     placeholder={`Message ${activeDisplayName}…`}
-                                    className="flex-1 bg-transparent outline-none text-sm resize-none max-h-28 py-1
-                                        text-gray-900 dark:text-zinc-100
+                                    className="flex-1 bg-transparent outline-none text-sm resize-none
+                                        max-h-28 py-1 text-gray-900 dark:text-zinc-100
                                         placeholder:text-gray-400 dark:placeholder:text-zinc-500"
-                                    style={{ minHeight: '24px' }}
                                 />
                                 <button
                                     onClick={sendMessage}
                                     disabled={!input.trim() || wsStatus !== 'open'}
-                                    className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center
-                                        text-white flex-shrink-0 mb-0.5
-                                        hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                                >
+                                    className="w-8 h-8 rounded-full bg-blue-500 flex items-center
+                                        justify-center text-white flex-shrink-0 mb-0.5
+                                        hover:bg-blue-600 disabled:opacity-40
+                                        disabled:cursor-not-allowed transition-colors">
                                     <HiPaperAirplane className="text-sm -rotate-45 translate-x-px" />
                                 </button>
                             </div>
-                            <p className="text-[10px] mt-1.5 text-center text-gray-400 dark:text-zinc-600">
+                            <p className="text-[10px] mt-1.5 text-center
+                                text-gray-400 dark:text-zinc-600">
                                 Enter to send · Shift+Enter for new line
                             </p>
                         </div>
