@@ -170,7 +170,12 @@ export default function FollowListModal({ username, type, onClose }) {
 
                     {!loading && !error && users.length === 0 && (
                         <div className="text-center py-12 text-gray-400">
-                            <p className="text-3xl mb-2">{type === 'followers' ? <HiUserGroup /> : <HiMagnifyingGlass />}</p>
+                            <div className="flex justify-center mb-2">
+                                {type === 'followers'
+                                    ? <HiUserGroup className="w-10 h-10" />
+                                    : <HiMagnifyingGlass className="w-10 h-10" />
+                                }
+                            </div>
                             <p className="text-sm">
                                 {type === 'followers'
                                     ? 'No followers yet.'

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-
+from .ai_views import GenerateCaptionView
 urlpatterns = [
     path('', views.TweetListCreateView.as_view()),
     path('feed/', views.FeedView.as_view()),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('<int:pk>/like/', views.LikeToggleView.as_view()),
     path('poll/vote/<int:option_id>/', views.PollVoteView.as_view()),
     path('trending/', views.TrendingHashtagsView.as_view()),
+    path('generate-caption/', GenerateCaptionView.as_view()),
 ]

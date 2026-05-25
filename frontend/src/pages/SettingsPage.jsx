@@ -61,7 +61,7 @@ export default function SettingsPage() {
       {/* Content */}
       <div className="px-4 py-5 w-full max-w-lg mx-auto">
         <p className="text-sm text-[var(--text-2)] mb-5">
-          @{user?.username} — Customize your experience and account info
+          Hey!! @{user?.username}
         </p>
 
         {error && (

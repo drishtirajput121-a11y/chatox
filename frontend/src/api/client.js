@@ -91,6 +91,7 @@ export const tweetsAPI = {
   votePoll: (optionId) => api.post(`/tweets/poll/vote/${optionId}/`),
   delete: (pk) => api.delete(`/tweets/${pk}/`),
   toggleLike: (pk) => api.post(`/tweets/${pk}/like/`),
+  generateCaption: (hint) => api.post('/tweets/generate-caption/', { hint }),
 }
 
 export default api

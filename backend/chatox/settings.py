@@ -58,7 +58,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'chatox.wsgi.application'
-
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -124,4 +124,9 @@ CHANNEL_LAYERS = {
             'hosts': [('127.0.0.1', 6379)],
         },
     },
+}
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
 }
