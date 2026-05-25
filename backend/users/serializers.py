@@ -32,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email','avatar','banner', 'bio', 'followers_count', 'following_count', 'is_following']
+        fields = ['id', 'first_name','last_name','username', 'email','avatar','banner', 'bio', 'followers_count', 'following_count', 'is_following']
         read_only_fields = ['followers_count', 'following_count', 'is_following']
 
     def get_is_following(self, obj):

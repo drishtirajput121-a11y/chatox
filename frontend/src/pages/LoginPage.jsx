@@ -13,17 +13,21 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.username || !form.password) { setError('Fill in all fields'); return }
     setLoading(true)
     setError('')
+    setSuccess(false)
     try {
-      await login(form)
+      // send as regular JSON — no FormData needed for text fields
+      const { data } = await usersAPI.updateMe({
+        first_name: form.first_name,
+        last_name: form.last_name,
+        email: form.email,
+        bio: form.bio,
+      })
+      updateUser(data)  // merge into store
+      setSuccess(true)
     } catch (err) {
-      setError(
-        err.response?.data?.detail ||
-        err.response?.data?.non_field_errors?.[0] ||
-        'Login failed. Check your credentials.'
-      )
+      setError(err.response?.data?.detail || 'Update failed')
     } finally {
       setLoading(false)
     }
