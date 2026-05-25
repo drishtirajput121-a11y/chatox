@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from .models import Tweet, Like
 from .serializers import TweetSerializer, PollSerializer
 from notifications.models import Notification
@@ -10,6 +10,8 @@ import json
 from django.utils import timezone
 from datetime import timedelta
 from .tasks import publish_scheduled_tweet
+from django.db.models import Count
+import re
 
 
 class IsAuthorOrReadOnly:
@@ -158,3 +160,63 @@ class LikeToggleView(APIView):
             'status': 'liked',
             'likes_count': tweet.likes_count
         })
+
+class TrendingHashtagsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        # only tweets from last 24 hours
+        since = timezone.now() - timedelta(hours=24)
+
+        recent_tweets = Tweet.objects.filter(
+            is_published=True,
+            created_at__gte=since,
+        ).annotate(
+            like_count=Count('likes')
+        ).values_list('content', 'like_count')
+
+        if not recent_tweets:
+            return Response([])
+
+        # build hashtag scores
+        counts = {}
+        for content, like_count in recent_tweets:
+            tags = re.findall(r'#(\w+)', content, re.IGNORECASE)
+            for tag in tags:
+                key = tag.lower()
+                if key not in counts:
+                    counts[key] = {'posts': 0, 'likes': 0}
+                counts[key]['posts'] += 1
+                counts[key]['likes'] += like_count
+
+        if not counts:
+            return Response([])
+
+        # normalize + score
+        max_posts = max(v['posts'] for v in counts.values()) or 1
+        max_likes = max(v['likes'] for v in counts.values()) or 1
+
+        scored = []
+        for tag, data in counts.items():
+            post_score  = data['posts'] / max_posts
+            like_score  = data['likes'] / max_likes
+            score = (like_score * 0.6) + (post_score * 0.4)
+            scored.append({
+                'tag':   f'#{tag}',
+                'score': score,
+                'posts': data['posts'],
+                'likes': data['likes'],
+            })
+
+        scored.sort(key=lambda x: x['score'], reverse=True)
+
+        return Response([
+            {
+                'tag': t['tag'],
+                'label': (
+                    f"{t['posts']} post{'s' if t['posts'] != 1 else ''}"
+                    f" · {t['likes']} like{'s' if t['likes'] != 1 else ''}"
+                ),
+            }
+            for t in scored[:5]
+        ])

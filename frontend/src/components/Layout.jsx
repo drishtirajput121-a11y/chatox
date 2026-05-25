@@ -1,22 +1,78 @@
+import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../context/authStore'
 import { useThemeStore } from '../context/themeStore'
-import styles from './Layout.module.css'
 import useChatNotifications from '../hooks/useChatNotifications'
 import MessageToast from './MessageToast'
 import useChatNotifStore from '../context/chatNotifStore'
+import { api } from '../api/client'
 import {
   HiHome, HiMagnifyingGlass, HiBell, HiCog6Tooth, HiUser,
   HiChatBubbleLeftRight, HiArrowRightOnRectangle, HiSun, HiMoon
 } from 'react-icons/hi2'
 import { FaReact } from 'react-icons/fa'
 
+/* ── TrendingCard ── */
+function TrendingCard() {
+  const [trends, setTrends] = useState([])
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    api.get('/tweets/trending/')
+      .then(res => setTrends(res.data))
+      .catch(() => setTrends([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl overflow-hidden
+      border border-gray-200 dark:border-gray-800">
+      <h2 className="text-xl font-extrabold px-4 py-4 text-gray-900 dark:text-white
+        border-b border-gray-200 dark:border-gray-800">
+        What's happening
+      </h2>
+
+      {loading && (
+        <div className="flex justify-center py-6">
+          <div className="w-4 h-4 border-2 border-gray-200 border-t-blue-500
+            rounded-full animate-spin" />
+        </div>
+      )}
+
+      {!loading && trends.length === 0 && (
+        <div className="px-4 py-3 flex flex-col gap-1">
+          <span className="text-xs text-gray-500">No trends yet</span>
+          <span className="text-sm font-bold text-gray-900 dark:text-white">
+            Be the first to start a trend! ;)
+          </span>
+        </div>
+      )}
+
+      {trends.map((t, i) => (
+        <div
+          key={t.tag}
+          onClick={() => navigate(`/explore?q=${encodeURIComponent(t.tag)}`)}
+          className="px-4 py-3 flex flex-col gap-1 cursor-pointer
+            hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors
+            border-b border-gray-200 dark:border-gray-800 last:border-b-0"
+        >
+          <span className="text-xs text-gray-500">Trending · #{i + 1}</span>
+          <span className="text-sm font-bold text-gray-900 dark:text-white">{t.tag}</span>
+          <span className="text-xs text-gray-500">{t.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ── Layout ── */
 export default function Layout() {
   useChatNotifications()
 
   const { user, logout } = useAuthStore()
   const { theme, toggle } = useThemeStore()
-  const { unreadCount, clearUnread } = useChatNotifStore()  // ← add
+  const { unreadCount, clearUnread } = useChatNotifStore()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -46,16 +102,32 @@ export default function Layout() {
   ]
 
   return (
-    <div className={styles.shell}>
+    <div className="flex justify-center max-w-[1250px] mx-auto min-h-screen px-4">
 
-      {/* Left Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.logo} onClick={() => navigate('/')}>
-          <FaReact className={styles.reactLogo} />
-          <span className={styles.logoText}>Chatox</span>
+      {/* ── Left Sidebar ── */}
+      <aside className="w-64 min-w-[256px] sticky top-0 h-screen flex flex-col
+        px-2 py-3 border-r border-gray-200 dark:border-gray-800
+        max-md:fixed max-md:bottom-0 max-md:top-auto max-md:w-full max-md:min-w-full
+        max-md:h-14 max-md:flex-row max-md:border-t max-md:border-r-0
+        max-md:bg-white max-md:dark:bg-black max-md:z-50 max-md:px-0 max-md:py-0">
+
+        {/* Logo */}
+        <div
+          onClick={() => navigate('/')}
+          className="flex items-center gap-3 px-3 py-3 rounded-full cursor-pointer
+            hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors
+            w-fit mb-2 max-md:hidden"
+        >
+          <FaReact className="text-4xl text-blue-500 animate-spin [animation-duration:20s]" />
+          <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Chatox
+          </span>
         </div>
 
-        <nav className={styles.nav}>
+        {/* Nav */}
+        <nav className="flex flex-col gap-1 flex-1
+          max-md:flex-row max-md:flex-none max-md:w-full
+          max-md:justify-around max-md:items-center">
           {navItems.map(({ to, icon: Icon, label, exact }) => {
             const isChat = label === 'Chat'
             return (
@@ -63,69 +135,88 @@ export default function Layout() {
                 key={label + to}
                 to={to}
                 end={exact}
-                className={({ isActive }) =>
-                  `${styles.navItem} ${isActive ? styles.active : ''}`
-                }
                 onClick={() => isChat && clearUnread()}
+                className={({ isActive }) =>
+                  `flex items-center gap-4 px-4 py-3 rounded-full w-fit
+                  text-gray-900 dark:text-white text-xl
+                  hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors
+                  max-md:px-2 max-md:py-2 max-md:rounded-lg
+                  ${isActive ? 'font-bold' : 'font-normal'}`
+                }
               >
-                <span className={styles.navIcon} style={{ position: 'relative' }}>
+                {/* icon + badge */}
+                <span className="relative flex items-center justify-center text-[1.6rem]">
                   <Icon />
                   {isChat && unreadCount > 0 && (
-                    <span style={{
-                      position: 'absolute',
-                      top: -6,
-                      right: -6,
-                      minWidth: 16,
-                      height: 16,
-                      background: '#10b981',
-                      color: '#fff',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      borderRadius: 99,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '0 3px',
-                      lineHeight: 1,
-                    }}>
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4
+                      bg-emerald-500 text-white text-[10px] font-bold rounded-full
+                      flex items-center justify-center px-0.5">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
                 </span>
-                <span className={styles.navLabel}>{label}</span>
+                <span className="max-md:hidden">{label}</span>
               </NavLink>
             )
           })}
 
+          {/* Post button */}
           {user && (
-            <button className={styles.postBtn} onClick={handlePostClick}>
+            <button
+              onClick={handlePostClick}
+              className="mt-4 w-[90%] bg-blue-500 hover:bg-blue-600 active:scale-[.98]
+                text-white font-bold text-lg py-3 rounded-full transition-all
+                shadow-[0_4px_12px_rgba(29,155,240,0.15)]
+                max-md:hidden"
+            >
               Post
             </button>
           )}
         </nav>
 
-        <div className={styles.sidebarBottom}>
+        {/* Bottom section */}
+        <div className="flex flex-col gap-3 mt-auto max-md:hidden">
+          {/* Theme toggle */}
           <button
-            className={styles.themeToggleBtn}
             onClick={toggle}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            className="flex items-center gap-4 px-4 py-2.5 rounded-full w-fit
+              border border-gray-200 dark:border-gray-700 font-medium
+              text-gray-900 dark:text-white text-base
+              hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
           >
-            {theme === 'dark' ? <HiSun /> : <HiMoon />}
-            <span className={styles.themeToggleText}>
+            {theme === 'dark'
+              ? <HiSun className="text-2xl text-blue-500" />
+              : <HiMoon className="text-2xl text-blue-500" />
+            }
+            <span className="text-sm">
               {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
             </span>
           </button>
 
+          {/* User chip */}
           {user && (
-            <div className={styles.userChip}>
-              <div className={styles.avatarSm}>{user.username[0].toUpperCase()}</div>
-              <div className={styles.userInfo}>
-                <span className={styles.userDisplayName}>
+            <div className="flex items-center gap-3 px-3 py-3 rounded-full
+              hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors w-full">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900
+                text-blue-600 dark:text-blue-300 font-bold text-lg flex items-center
+                justify-center flex-shrink-0 border border-gray-200 dark:border-gray-700">
+                {user.username[0].toUpperCase()}
+              </div>
+              <div className="flex-1 flex flex-col min-w-0">
+                <span className="text-sm font-bold text-gray-900 dark:text-white truncate">
                   {user.first_name || user.username}
                 </span>
-                <span className={styles.userHandle}>@{user.username}</span>
+                <span className="text-xs text-gray-500 truncate">
+                  @{user.username}
+                </span>
               </div>
-              <button className={styles.logoutBtn} onClick={handleLogout} title="Logout">
+              <button
+                onClick={handleLogout}
+                title="Logout"
+                className="p-1.5 rounded-full text-gray-400 text-2xl flex items-center
+                  hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
                 <HiArrowRightOnRectangle />
               </button>
             </div>
@@ -133,68 +224,62 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main */}
-      <main className={styles.main}>
+      {/* ── Main feed ── */}
+      <main className="flex-1 max-w-[600px] min-w-[600px] min-h-screen
+        border-r border-gray-200 dark:border-gray-800
+        max-md:max-w-full max-md:min-w-full max-md:border-r-0 max-md:pb-16">
         <Outlet />
       </main>
 
-      {/* Right Sidebar */}
-      <aside className={styles.rightSidebar}>
-        <div className={styles.searchWrapper}>
-          <HiMagnifyingGlass className={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="Search Chatox"
-            className={styles.searchInput}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                navigate(`/explore?q=${encodeURIComponent(e.target.value)}`)
-              }
-            }}
-          />
-        </div>
+      {/* ── Right Sidebar ── */}
+      <aside className="w-80 min-w-[320px] sticky top-0 h-screen
+        px-6 py-3 flex flex-col gap-4 overflow-y-auto
+        max-[1095px]:hidden">
 
-        <div className={styles.trendingCard}>
-          <h2 className={styles.trendingTitle}>What's happening</h2>
-          <div className={styles.trendItem}>
-            <div className={styles.trendMeta}>Technology · Trending</div>
-            <div className={styles.trendName}>#ReactJS</div>
-            <div className={styles.trendCount}>124,582 posts</div>
-          </div>
-          <div className={styles.trendItem}>
-            <div className={styles.trendMeta}>Web Development · Trending</div>
-            <div className={styles.trendName}>#ViteJS</div>
-            <div className={styles.trendCount}>84,203 posts</div>
-          </div>
-          <div className={styles.trendItem}>
-            <div className={styles.trendMeta}>Programming · Trending</div>
-            <div className={styles.trendName}>#Zustand</div>
-            <div className={styles.trendCount}>12,940 posts</div>
-          </div>
-          <div className={styles.trendItem}>
-            <div className={styles.trendMeta}>Trending in India</div>
-            <div className={styles.trendName}>#DjangoREST</div>
-            <div className={styles.trendCount}>31,509 posts</div>
-          </div>
-          <div className={styles.trendItem}>
-            <div className={styles.trendMeta}>Software Engineering</div>
-            <div className={styles.trendName}>#WebDev</div>
-            <div className={styles.trendCount}>245,119 posts</div>
+        {/* Search */}
+        <div className="sticky top-0 bg-white dark:bg-black pb-3 pt-1 z-10">
+          <div className="relative">
+            <HiMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2
+              text-gray-400 text-xl pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search Chatox"
+              className="w-full bg-gray-100 dark:bg-gray-900 border border-transparent
+                text-gray-900 dark:text-white placeholder-gray-500
+                pl-12 pr-4 py-3 rounded-full text-sm outline-none
+                focus:bg-white dark:focus:bg-black focus:border-blue-500 transition-all"
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  navigate(`/explore?q=${encodeURIComponent(e.target.value)}`)
+                }
+              }}
+            />
           </div>
         </div>
 
-        <footer className={styles.sidebarFooter}>
-          <a href="#">Terms of Service</a>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Cookie Policy</a>
-          <a href="#">More</a>
+        {/* Trending */}
+        <TrendingCard />
+
+        {/* Footer */}
+        <footer className="flex flex-wrap gap-x-3 gap-y-2 text-xs text-gray-400
+          px-1 mt-auto">
+          <a href="#" className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            Terms of Service
+          </a>
+          <a href="#" className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            Privacy Policy
+          </a>
+          <a href="#" className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            Cookie Policy
+          </a>
+          <a href="#" className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            More
+          </a>
           <span>© 2026 Chatox Corp.</span>
         </footer>
       </aside>
 
-      {/* Toast — outside all sidebars so it overlays everything */}
       <MessageToast />
-
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { useAuthStore } from '../context/authStore'
 import { api } from '../api/client'
 import { HiArrowLeft, HiPaperAirplane, HiMagnifyingGlass, HiXMark } from 'react-icons/hi2'
 import { formatDistanceToNow } from 'date-fns'
+import PageLogo from '../components/PageLogo'
 
 /* ── Avatar ── */
 function Avatar({ username, src, size = 40 }) {
@@ -333,9 +334,9 @@ export default function ChatPage() {
                 border-r border-gray-100 dark:border-zinc-800
                 ${activeUser ? 'hidden md:flex' : 'flex'}`}>
 
-                {/* Header */}
-                <div className="px-4 py-3.5 border-b border-gray-100 dark:border-zinc-800">
+                <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 dark:border-zinc-800">
                     <h1 className="font-bold text-base text-gray-900 dark:text-zinc-100">Messages</h1>
+                    <PageLogo />
                 </div>
 
                 {/* Search */}

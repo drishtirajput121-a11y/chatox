@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../context/authStore'
-import styles from './Page.module.css'
 import { FaReact } from 'react-icons/fa'
 
 export default function RegisterPage() {
@@ -10,7 +9,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -28,45 +27,69 @@ export default function RegisterPage() {
     }
   }
 
+  const inputCls = `border border-[var(--border-strong)] rounded-xl px-3.5 py-3
+    text-sm text-[var(--text-1)] bg-[var(--bg)] w-full outline-none
+    transition-[border-color,box-shadow] duration-200
+    focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_var(--accent-light)]`
+
   return (
-    <div className={styles.authWrap}>
-      <div className={styles.authCard}>
-        <div className={styles.authLogo}>
-          <FaReact className={styles.reactLogo} />
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-2)] px-4 py-8">
+      <div className="w-full max-w-md bg-[var(--bg)] border border-[var(--border)]
+        rounded-2xl px-6 md:px-8 py-8 md:py-10 shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+
+        {/* Logo */}
+        <div className="flex items-center gap-3 text-[1.5rem] md:text-[1.6rem]
+          font-extrabold tracking-tight mb-6 text-[var(--accent)]">
+          <FaReact className="text-[2rem] md:text-[2.2rem] animate-spin [animation-duration:20s]" />
           <span>Chatox</span>
         </div>
 
-        <h1 className={styles.authHeading}>Create your account</h1>
+        <h1 className="text-2xl md:text-[1.85rem] font-extrabold mb-6
+          text-[var(--text-1)] tracking-tight">
+          Create your account
+        </h1>
 
-        {error && <div className={styles.formError}>{error}</div>}
+        {error && (
+          <div className="bg-[var(--red-light)] text-[var(--red)] border border-[var(--red)]/20
+            rounded-xl px-4 py-2.5 text-sm font-medium mb-5">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {[
             { key: 'username', label: 'Username', type: 'text', auto: 'username' },
             { key: 'email', label: 'Email', type: 'email', auto: 'email' },
             { key: 'password', label: 'Password', type: 'password', auto: 'new-password' },
             { key: 'password2', label: 'Confirm password', type: 'password', auto: 'new-password' },
           ].map(({ key, label, type, auto }) => (
-            <div className={styles.formGroup} key={key}>
-              <label className={styles.label}>{label}</label>
+            <div className="flex flex-col gap-1.5" key={key}>
+              <label className="text-xs font-semibold text-[var(--text-2)] uppercase tracking-wide">
+                {label}
+              </label>
               <input
-                className={styles.input}
-                type={type}
-                value={form[key]}
-                onChange={set(key)}
-                autoComplete={auto}
+                className={inputCls} type={type}
+                value={form[key]} onChange={set(key)} autoComplete={auto}
               />
             </div>
           ))}
 
-          <button className={styles.submitBtn} type="submit" disabled={loading}>
-            {loading && <span className="spinner" style={{ width:16, height:16, borderWidth:2, borderColor:'rgba(255,255,255,0.3)', borderTopColor:'#fff' }} />}
+          <button
+            type="submit" disabled={loading}
+            className="w-full flex items-center justify-center gap-2
+              bg-[var(--accent)] hover:bg-[var(--accent-hover)]
+              disabled:opacity-50 disabled:cursor-not-allowed
+              text-white border-none rounded-full py-3 text-sm font-bold mt-2
+              transition-[background-color,opacity] duration-200 cursor-pointer"
+          >
+            {loading && <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />}
             {loading ? 'Creating…' : 'Join Chatox'}
           </button>
         </form>
 
-        <p className={styles.authSwitch}>
-          Already have an account? <Link to="/login">Sign in</Link>
+        <p className="text-center mt-6 text-sm text-[var(--text-2)]">
+          Already have an account?{' '}
+          <Link to="/login" className="text-[var(--accent)] font-bold hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

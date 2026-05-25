@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 *,
 *::before,
 *::after {
@@ -16,28 +18,23 @@
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Brand / Accent */
   --accent: #1d9bf0;
   --accent-hover: #1a8cd8;
   --accent-light: rgba(29, 155, 240, 0.1);
 
-  /* Backgrounds */
   --bg: #000000;
   --bg-2: #16181c;
   --bg-3: #1d1f23;
   --bg-hover: rgba(255, 255, 255, 0.03);
   --bg-overlay: rgba(91, 112, 131, 0.4);
 
-  /* Borders */
   --border: #2f3336;
   --border-strong: #3e4144;
 
-  /* Text */
   --text-1: #e7e9ea;
   --text-2: #71767b;
   --text-3: #536471;
 
-  /* Semantic */
   --red: #f91880;
   --red-light: rgba(249, 24, 128, 0.1);
   --green: #00ba7c;
@@ -45,7 +42,6 @@
   --blue: #1d9bf0;
   --blue-light: rgba(29, 155, 240, 0.1);
 
-  /* Layout */
   --sidebar-w: 275px;
   --right-w: 350px;
   --feed-max: 600px;
@@ -81,8 +77,6 @@
   --blue-light: rgba(29, 155, 240, 0.1);
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 html {
   font-family: var(--font);
   font-size: 15px;
@@ -117,7 +111,7 @@ a {
   color: inherit;
 }
 
-/* Scrollbar */
+/* ========== SCROLLBAR ========== */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -131,7 +125,7 @@ a {
   border-radius: 4px;
 }
 
-/* Utility */
+/* ========== UTILITY ========== */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -143,7 +137,7 @@ a {
   border: 0;
 }
 
-/* Spinner */
+/* ========== SPINNER ========== */
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -159,7 +153,7 @@ a {
   animation: spin 0.7s linear infinite;
 }
 
-/* Fade in */
+/* ========== ANIMATIONS ========== */
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -186,4 +180,365 @@ a {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+}
+
+/* ========================================================
+   RESPONSIVE LAYOUT
+   - Mobile  (< 640px):  bottom nav, full-width feed
+   - Tablet  (640–1023px): left sidebar icon-only, no right col
+   - Desktop (1024px+):  full 3-column layout
+   ======================================================== */
+
+/* --- App shell --- */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* --- Left sidebar --- */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px;
+  transition: width 0.2s ease;
+}
+
+/* --- Feed / main content --- */
+.feed-col {
+  flex: 1;
+  min-width: 0;
+  border-right: 1px solid var(--border);
+  max-width: var(--feed-max);
+}
+
+/* --- Right sidebar --- */
+.right-col {
+  width: var(--right-w);
+  flex-shrink: 0;
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* ---- Tablet (640px – 1023px) ---- */
+@media (max-width: 1023px) {
+  .sidebar {
+    width: 68px;
+    /* icon-only */
+    padding: 0 8px;
+  }
+
+  /* Hide text labels in sidebar, show only icons */
+  .sidebar .nav-label,
+  .sidebar .logo-text,
+  .sidebar .user-info,
+  .sidebar .post-btn-text {
+    display: none;
+  }
+
+  .sidebar .nav-item {
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .sidebar .post-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Right column hidden on tablet */
+  .right-col {
+    display: none;
+  }
+
+  /* Feed expands to fill */
+  .feed-col {
+    max-width: 100%;
+  }
+}
+
+/* ---- Mobile (< 640px) ---- */
+@media (max-width: 639px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  /* Sidebar becomes bottom tab bar */
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    width: 100%;
+    height: 56px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    z-index: 100;
+    padding: 0 8px;
+    overflow: visible;
+  }
+
+  /* Hide logo and user chip on mobile bottom bar */
+  .sidebar .logo-wrap,
+  .sidebar .user-chip,
+  .sidebar .post-btn {
+    display: none;
+  }
+
+  .sidebar .nav-item {
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 8px;
+    font-size: 0.65rem;
+  }
+
+  /* Feed takes full width, add bottom padding for tab bar */
+  .feed-col {
+    max-width: 100%;
+    padding-bottom: 56px;
+  }
+
+  .right-col {
+    display: none;
+  }
+
+  /* Floating post button on mobile */
+  .mobile-post-btn {
+    display: flex;
+    position: fixed;
+    bottom: 70px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 16px rgba(29, 155, 240, 0.4);
+    z-index: 99;
+    border: none;
+    cursor: pointer;
+  }
+}
+
+/* Hide mobile post btn on tablet+ */
+@media (min-width: 640px) {
+  .mobile-post-btn {
+    display: none;
+  }
+}
+
+/* ========== TWEET CARD ========== */
+.tweet-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.tweet-card:hover {
+  background: var(--bg-hover);
+}
+
+/* ========== COMPOSE BOX ========== */
+.compose-box {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ========== MODALS ========== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: fadeUp 0.2s ease both;
+}
+
+@media (max-width: 639px) {
+  .modal-card {
+    max-width: 100%;
+    border-radius: var(--radius) var(--radius) 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 85vh;
+  }
+
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+}
+
+/* ========== AUTH PAGES ========== */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 24px 16px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+}
+
+@media (max-width: 639px) {
+  .auth-card {
+    border: none;
+    padding: 24px 16px;
+  }
+}
+
+/* ========== PROFILE PAGE ========== */
+.profile-banner {
+  height: 200px;
+  background: linear-gradient(135deg, var(--accent-light), var(--blue-light));
+  position: relative;
+}
+
+@media (max-width: 639px) {
+  .profile-banner {
+    height: 120px;
+  }
+}
+
+/* ========== SEARCH BAR ========== */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  padding: 10px 16px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.search-bar:focus-within {
+  background: var(--bg);
+  border-color: var(--accent);
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.93rem;
+  color: var(--text-1);
+  flex: 1;
+  width: 100%;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-3);
+}
+
+/* ========== BUTTONS ========== */
+.btn-primary {
+  background: var(--text-1);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 9px 20px;
+  font-size: 0.93rem;
+  font-weight: 700;
+  transition: opacity 0.15s;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 9px 20px;
+  font-size: 0.93rem;
+  font-weight: 700;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.btn-accent:hover {
+  background: var(--accent-hover);
+}
+
+.btn-accent:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  padding: 9px 20px;
+  font-size: 0.93rem;
+  font-weight: 700;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.btn-outline:hover {
+  background: var(--bg-hover);
 }
