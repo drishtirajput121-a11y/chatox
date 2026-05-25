@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { tweetsAPI } from '../api/client'
 import { useAuthStore } from '../context/authStore'
-import { Avatar } from './TweetCard'
 import PollComposer from './PollComposer'
 import SchedulePicker from './SchedulePicker'
 import LocationPicker from './LocationPicker'
@@ -11,6 +10,7 @@ import {
 } from 'react-icons/hi2'
 import useMediaUpload from '../hooks/useMediaUpload'
 import MediaPreviews from './MediaPreviews'
+import Avatar from './Avatar'
 
 const MAX_CHARS = 280
 
@@ -122,7 +122,7 @@ export default function ComposeBox({ onPost }) {
 
       {/* Avatar */}
       <div className="flex-shrink-0 pt-1">
-        <Avatar username={user.username} />
+        <Avatar username={user.username} src={user.avatar} />
       </div>
 
       {/* Right side */}
