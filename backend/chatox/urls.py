@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
+from django.core.files.storage import default_storage
 def check_cloudinary(request):
     import os
     return JsonResponse({
