@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../context/authStore'
 import { api } from '../api/client'
-import { HiArrowLeft, HiPaperAirplane, HiMagnifyingGlass, HiXMark } from 'react-icons/hi2'
+import { HiArrowLeft, HiPaperAirplane, HiMagnifyingGlass, HiXMark, HiChatBubbleLeftRight } from 'react-icons/hi2'
 import { formatDistanceToNow } from 'date-fns'
 import PageLogo from '../components/PageLogo'
 
