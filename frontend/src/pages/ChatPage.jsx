@@ -215,39 +215,79 @@ export default function ChatPage() {
         searchRef.current?.blur()
     }
 
+    /* ── Token refresh helper ── */
+    const getFreshToken = useCallback(async () => {
+        try {
+            const refresh = localStorage.getItem('refresh_token')
+            if (!refresh) throw new Error('No refresh token')
+            const { data } = await api.post('/auth/token/refresh/', { refresh })
+            localStorage.setItem('access_token', data.access)
+            return data.access
+        } catch {
+            // Refresh failed — send user back to login
+            navigate('/login')
+            return null
+        }
+    }, [navigate])
+
     /* ── WebSocket ── */
     useEffect(() => {
         if (!activeUser || !me) return
+
         if (wsRef.current) { wsRef.current.close(); wsRef.current = null }
         setMessages([])
         setIsTyping(false)
         setWsStatus('connecting')
 
-        const token = localStorage.getItem('access_token')
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-        const wsHost = import.meta.env.VITE_WS_HOST || 'localhost:8000'
-        const ws = new WebSocket(`${wsProtocol}://${wsHost}/ws/chat/${activeUser}/?token=${token}`)
-        wsRef.current = ws
+        let cancelled = false
 
-        ws.onopen = () => { setWsStatus('open'); loadConversations() }
-        ws.onclose = () => setWsStatus('closed')
-        ws.onerror = () => setWsStatus('error')
-        ws.onmessage = (e) => {
-            const data = JSON.parse(e.data)
-            if (data.type === 'history') setMessages(data.messages)
-            else if (data.type === 'message') {
-                setMessages(prev => [...prev, data.message])
-                setIsTyping(false)
+        const openSocket = async () => {
+            // Always refresh token before connecting to avoid 15-min expiry issue
+            const token = await getFreshToken()
+            if (!token || cancelled) return
+
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+            const wsHost = import.meta.env.VITE_WS_HOST || 'localhost:8000'
+            const ws = new WebSocket(`${wsProtocol}://${wsHost}/ws/chat/${activeUser}/?token=${token}`)
+            wsRef.current = ws
+
+            ws.onopen = () => {
+                if (cancelled) { ws.close(); return }
+                setWsStatus('open')
                 loadConversations()
-            } else if (data.type === 'typing') {
-                setIsTyping(data.is_typing)
-                if (data.is_typing) {
-                    clearTimeout(typingTimeoutRef.current)
-                    typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000)
+            }
+            ws.onclose = (e) => {
+                console.warn('WS closed:', e.code, e.reason)
+                setWsStatus('closed')
+            }
+            ws.onerror = (e) => {
+                console.error('WS error:', e)
+                setWsStatus('error')
+            }
+            ws.onmessage = (e) => {
+                const data = JSON.parse(e.data)
+                if (data.type === 'history') setMessages(data.messages)
+                else if (data.type === 'message') {
+                    setMessages(prev => [...prev, data.message])
+                    setIsTyping(false)
+                    loadConversations()
+                } else if (data.type === 'typing') {
+                    setIsTyping(data.is_typing)
+                    if (data.is_typing) {
+                        clearTimeout(typingTimeoutRef.current)
+                        typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000)
+                    }
                 }
             }
         }
-        return () => ws.close()
+
+        openSocket()
+
+        return () => {
+            cancelled = true
+            wsRef.current?.close()
+            wsRef.current = null
+        }
     }, [activeUser, me])
 
     useEffect(() => {
@@ -292,11 +332,6 @@ export default function ChatPage() {
     const showSearchResults = isSearching && search.trim().length > 0
 
     return (
-        /*
-          KEY FIX: Use fixed positioning with pb-14 (bottom nav height) on mobile
-          so the chat doesn't get hidden behind the nav bar.
-          On desktop it's a normal flex row.
-        */
         <div className="flex fixed inset-0 pb-14 md:pb-0 md:relative md:inset-auto
             md:h-full bg-white dark:bg-black">
 
@@ -415,7 +450,7 @@ export default function ChatPage() {
             `}>
                 {!activeUser ? <EmptyChat /> : (
                     <>
-                        {/* Chat header — fixed height */}
+                        {/* Chat header */}
                         <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0
                             backdrop-blur-md bg-white/90 dark:bg-black/90
                             border-b border-gray-100 dark:border-zinc-800">
@@ -439,14 +474,55 @@ export default function ChatPage() {
                                             ? <span className="text-blue-500">● Connected</span>
                                             : wsStatus === 'connecting'
                                                 ? <span className="text-amber-500">● Connecting…</span>
-                                                : <span className="text-gray-400 dark:text-zinc-500">● Offline</span>
+                                                : wsStatus === 'error'
+                                                    ? <span className="text-red-400">● Connection failed</span>
+                                                    : <span className="text-gray-400 dark:text-zinc-500">● Offline</span>
                                         }
                                     </p>
                                 </div>
                             </Link>
+
+                            {/* Retry button when connection fails */}
+                            {(wsStatus === 'closed' || wsStatus === 'error') && (
+                                <button
+                                    onClick={() => setActiveUser(u => u === activeUser ? activeUser + ' ' : activeUser)}
+                                    className="ml-auto text-xs text-blue-500 hover:underline"
+                                    // cleaner retry: just re-trigger the effect
+                                    onClick={async () => {
+                                        if (wsRef.current) { wsRef.current.close(); wsRef.current = null }
+                                        setWsStatus('connecting')
+                                        const token = await getFreshToken()
+                                        if (!token) return
+                                        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+                                        const wsHost = import.meta.env.VITE_WS_HOST || 'localhost:8000'
+                                        const ws = new WebSocket(`${wsProtocol}://${wsHost}/ws/chat/${activeUser}/?token=${token}`)
+                                        wsRef.current = ws
+                                        ws.onopen = () => { setWsStatus('open'); loadConversations() }
+                                        ws.onclose = (e) => { console.warn('WS closed:', e.code, e.reason); setWsStatus('closed') }
+                                        ws.onerror = (e) => { console.error('WS error:', e); setWsStatus('error') }
+                                        ws.onmessage = (e) => {
+                                            const data = JSON.parse(e.data)
+                                            if (data.type === 'history') setMessages(data.messages)
+                                            else if (data.type === 'message') {
+                                                setMessages(prev => [...prev, data.message])
+                                                setIsTyping(false)
+                                                loadConversations()
+                                            } else if (data.type === 'typing') {
+                                                setIsTyping(data.is_typing)
+                                                if (data.is_typing) {
+                                                    clearTimeout(typingTimeoutRef.current)
+                                                    typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000)
+                                                }
+                                            }
+                                        }
+                                    }}
+                                >
+                                    Retry
+                                </button>
+                            )}
                         </div>
 
-                        {/* Messages — scrollable, fills remaining space */}
+                        {/* Messages */}
                         <div className="flex-1 overflow-y-auto px-4 py-4
                             bg-gray-50 dark:bg-zinc-950">
                             {wsStatus === 'connecting' && (
@@ -457,7 +533,12 @@ export default function ChatPage() {
                             )}
                             {wsStatus === 'error' && (
                                 <div className="text-center py-6 text-sm text-red-500">
-                                    Connection failed. Make sure your backend is running with Daphne.
+                                    Connection failed. Check your network or try again.
+                                </div>
+                            )}
+                            {wsStatus === 'closed' && (
+                                <div className="text-center py-6 text-sm text-gray-400 dark:text-zinc-500">
+                                    Disconnected. Click Retry to reconnect.
                                 </div>
                             )}
                             {messages.length === 0 && wsStatus === 'open' && (
@@ -472,7 +553,7 @@ export default function ChatPage() {
                             <div ref={bottomRef} />
                         </div>
 
-                        {/* Input — fixed at bottom, never scrolls away */}
+                        {/* Input */}
                         <div className="flex-shrink-0 px-4 py-3
                             border-t border-gray-100 dark:border-zinc-800
                             bg-white dark:bg-black">
@@ -509,4 +590,4 @@ export default function ChatPage() {
             </div>
         </div>
     )
-}
+        }
