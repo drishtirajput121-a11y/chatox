@@ -60,6 +60,8 @@ sqlparse==0.5.3
 tenacity==9.1.0
 Twisted==24.11.0
 txaio==25.12.2
+pydantic==2.7.4
+pydantic_core==2.18.4
 typing_extensions==4.12.2
 tzdata==2024.2
 tzlocal==5.2
