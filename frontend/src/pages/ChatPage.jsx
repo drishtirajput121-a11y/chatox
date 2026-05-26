@@ -138,7 +138,7 @@ function EmptyChat() {
             text-gray-400 dark:text-zinc-500">
             <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-zinc-900
                 flex items-center justify-center text-3xl">
-                💬
+                <HiChatBubbleLeftRight />
             </div>
             <p className="font-semibold text-gray-600 dark:text-zinc-300">Your messages</p>
             <p className="text-sm text-center text-gray-500 dark:text-zinc-400">
@@ -391,7 +391,7 @@ export default function ChatPage() {
                             {!convosLoading && conversations.length === 0 && (
                                 <div className="flex flex-col items-center gap-3 py-12 px-4 text-center">
                                     <div className="w-12 h-12 rounded-full flex items-center justify-center
-                                        text-2xl bg-gray-100 dark:bg-zinc-900">🔍</div>
+                                        text-2xl bg-gray-100 dark:bg-zinc-900"><HiMagnifyingGlass /></div>
                                     <p className="text-sm text-gray-500 dark:text-zinc-400">
                                         Search for someone above to start your first conversation
                                     </p>
