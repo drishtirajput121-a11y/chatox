@@ -22,11 +22,10 @@ from django.http import JsonResponse
 from django.core.files.storage import default_storage
 
 def check_cloudinary(request):
-    import os
     return JsonResponse({
         'cloud_name': os.environ.get('CLOUDINARY_CLOUD_NAME', 'NOT SET'),
-        'api_key': os.environ.get('CLOUDINARY_API_KEY', 'NOT SET')[:6] + '...',
-        'storage': str(default_storage.__class__),
+        'api_key': str(os.environ.get('CLOUDINARY_API_KEY', 'NOT SET'))[:6] + '...',
+        'storage': str(default_storage.__class__.__name__),
     })
 
 
@@ -36,5 +35,5 @@ urlpatterns = [
     path('api/tweets/', include('tweets.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/chat/', include('chat.urls')),
-    path('debug-storage/', check_cloudinary)
+    path('debug-storage/', check_cloudinary),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
