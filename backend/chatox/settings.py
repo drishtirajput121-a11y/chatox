@@ -12,6 +12,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '.onrender.com',     # only for render fellows
+    '.railway.app',      # matches all railway.app subdomains
 ]
 if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
     ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
