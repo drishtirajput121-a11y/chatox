@@ -18,6 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
+def check_cloudinary(request):
+    import os
+    return JsonResponse({
+        'cloud_name': os.environ.get('CLOUDINARY_CLOUD_NAME', 'NOT SET'),
+        'api_key': os.environ.get('CLOUDINARY_API_KEY', 'NOT SET')[:6] + '...',
+        'storage': str(default_storage.__class__),
+    })
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,4 +34,5 @@ urlpatterns = [
     path('api/tweets/', include('tweets.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/chat/', include('chat.urls')),
+    path('debug-storage/', check_cloudinary)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
