@@ -163,3 +163,7 @@ STORAGES = {
     },
 }
 
+# Legacy settings required by django-cloudinary-storage 0.3.0 (doesn't support Django 5.x STORAGES dict)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
