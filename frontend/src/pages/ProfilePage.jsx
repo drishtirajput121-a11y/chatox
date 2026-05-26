@@ -5,7 +5,7 @@ import { useAuthStore } from '../context/authStore'
 import TweetCard from '../components/TweetCard'
 import { Avatar } from '../components/TweetCard'
 import FollowListModal from '../components/FollowListModal'
-import { HiArrowLeft, HiCamera, HiTrash } from 'react-icons/hi2'
+import { HiArrowLeft, HiCamera, HiTrash, HiPencil } from 'react-icons/hi2'
 import PageLogo from '../components/PageLogo'
 
 export default function ProfilePage() {
@@ -350,7 +350,7 @@ export default function ProfilePage() {
       {/* Tweets */}
       {tweets.length === 0 ? (
         <div className="flex flex-col items-center py-16 text-center gap-2">
-          <p className="text-3xl">✏️</p>
+          <p className="text-3xl"><HiPencil /></p>
           <p className="text-sm text-gray-400">No posts yet.</p>
         </div>
       ) : (

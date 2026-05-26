@@ -17,6 +17,7 @@ click==8.4.1
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
+cloudinary==1.44.2
 constantly==23.10.4
 cron-descriptor==1.4.5
 cryptography==48.0.0
@@ -24,6 +25,7 @@ daphne==4.2.1
 distro==1.9.0
 Django==5.1.7
 django-celery-beat==2.9.0
+django-cloudinary-storage==0.3.0
 django-cors-headers==4.9.0
 django-extensions==4.1
 django-timezone-field==7.2.1
@@ -82,4 +84,3 @@ wcwidth==0.7.0
 websockets==16.0
 whitenoise==6.12.0
 zope.interface==8.4
-
