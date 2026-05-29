@@ -137,7 +137,7 @@ function EmptyChat() {
         <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8
             text-gray-400 dark:text-zinc-500">
             <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-zinc-900
-                flex items-center justify-center text-3xl">
+                flex items-center justify-center text-2xl text-gray-400">
                 <HiChatBubbleLeftRight />
             </div>
             <p className="font-semibold text-gray-600 dark:text-zinc-300">Your messages</p>
@@ -215,27 +215,64 @@ export default function ChatPage() {
         searchRef.current?.blur()
     }
 
-    /* ── WebSocket ── */
-    useEffect(() => {
-        if (!activeUser || !me) return
-        if (wsRef.current) { wsRef.current.close(); wsRef.current = null }
-        setMessages([])
-        setIsTyping(false)
-        setWsStatus('connecting')
+    /* ── Get fresh access token ── */
+    // Uses the stored access token directly — no need to refresh before WS connect.
+    // The Axios interceptor handles HTTP refresh automatically.
+    // For WS we just use whatever is in localStorage — if it's expired,
+    // the backend will reject the WS connection with 4001/4003,
+    // and we handle that in onclose by redirecting to login.
+    const getToken = useCallback(() => {
+        return localStorage.getItem('access_token')
+    }, [])
 
-        const token = localStorage.getItem('access_token')
+    /* ── Open WebSocket ── */
+    const openSocket = useCallback((targetUser) => {
+        if (wsRef.current) {
+            wsRef.current.close()
+            wsRef.current = null
+        }
+
+        const token = getToken()
+        if (!token) {
+            navigate('/login')
+            return
+        }
+
         const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
         const host = import.meta.env.VITE_WS_HOST || 'localhost:8000'
         const url = `${proto}://${host}/ws/chat/${targetUser}/?token=${token}`
+
+        console.log('Connecting WS:', url)
+        setWsStatus('connecting')
+
+        const ws = new WebSocket(url)
         wsRef.current = ws
 
-        ws.onopen = () => { setWsStatus('open'); loadConversations() }
-        ws.onclose = () => setWsStatus('closed')
-        ws.onerror = () => setWsStatus('error')
+        ws.onopen = () => {
+            console.log('WS connected')
+            setWsStatus('open')
+            loadConversations()
+        }
+
+        ws.onclose = (e) => {
+            console.warn('WS closed — code:', e.code, 'reason:', e.reason)
+            setWsStatus('closed')
+            // 4001 = auth failed (expired token) — redirect to login
+            if (e.code === 4001 || e.code === 4003) {
+                navigate('/login')
+            }
+        }
+
+        ws.onerror = (e) => {
+            console.error('WS error:', e)
+            setWsStatus('error')
+        }
+
         ws.onmessage = (e) => {
             const data = JSON.parse(e.data)
-            if (data.type === 'history') setMessages(data.messages)
-            else if (data.type === 'message') {
+            if (data.type === 'history') {
+                setMessages(data.messages)
+            } else if (data.type === 'message') {
                 setMessages(prev => [...prev, data.message])
                 setIsTyping(false)
                 loadConversations()
@@ -247,18 +284,38 @@ export default function ChatPage() {
                 }
             }
         }
-        return () => ws.close()
+    }, [getToken, loadConversations, navigate])
+
+    /* ── Retry connection ── */
+    const retryConnection = useCallback(() => {
+        if (activeUser) openSocket(activeUser)
+    }, [activeUser, openSocket])
+
+    /* ── Open socket when activeUser changes ── */
+    useEffect(() => {
+        if (!activeUser || !me) return
+        setMessages([])
+        setIsTyping(false)
+        openSocket(activeUser)
+
+        return () => {
+            wsRef.current?.close()
+            wsRef.current = null
+        }
     }, [activeUser, me])
 
+    /* ── Scroll to bottom ── */
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages, isTyping])
 
+    /* ── Update URL ── */
     useEffect(() => {
         if (activeUser) navigate(`/chat/${activeUser}`, { replace: true })
         else navigate('/chat', { replace: true })
     }, [activeUser])
 
+    /* ── Send message ── */
     const sendMessage = () => {
         const content = input.trim()
         if (!content || wsRef.current?.readyState !== WebSocket.OPEN) return
@@ -275,7 +332,10 @@ export default function ChatPage() {
     const handleInputChange = (e) => {
         setInput(e.target.value)
         if (wsRef.current?.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({ type: 'typing', is_typing: e.target.value.length > 0 }))
+            wsRef.current.send(JSON.stringify({
+                type: 'typing',
+                is_typing: e.target.value.length > 0,
+            }))
         }
     }
 
@@ -292,30 +352,21 @@ export default function ChatPage() {
     const showSearchResults = isSearching && search.trim().length > 0
 
     return (
-        /*
-          KEY FIX: Use fixed positioning with pb-14 (bottom nav height) on mobile
-          so the chat doesn't get hidden behind the nav bar.
-          On desktop it's a normal flex row.
-        */
         <div className="flex fixed inset-0 pb-14 md:pb-0 md:relative md:inset-auto
             md:h-full bg-white dark:bg-black">
 
-            {/* ══ LEFT PANEL — conversation list ══ */}
-            <div className={`
-                flex flex-col w-full md:w-72 lg:w-80 flex-shrink-0
+            {/* ══ LEFT PANEL ══ */}
+            <div className={`flex flex-col w-full md:w-72 lg:w-80 flex-shrink-0
                 bg-white dark:bg-black
                 border-r border-gray-100 dark:border-zinc-800
-                ${activeUser ? 'hidden md:flex' : 'flex'}
-            `}>
+                ${activeUser ? 'hidden md:flex' : 'flex'}`}>
 
-                {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3.5
                     border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
                     <h1 className="font-bold text-base text-gray-900 dark:text-zinc-100">Messages</h1>
                     <PageLogo />
                 </div>
 
-                {/* Search bar */}
                 <div className="px-3 py-2 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
                     <div className={`flex items-center gap-2 rounded-full px-3 py-2 transition-all
                         bg-gray-100 dark:bg-zinc-900
@@ -342,14 +393,11 @@ export default function ChatPage() {
                     </div>
                 </div>
 
-                {/* Conversation / search list */}
                 <div className="flex-1 overflow-y-auto">
                     {showSearchResults ? (
                         <>
                             <p className="px-4 py-2 text-xs font-medium uppercase tracking-wide
-                                text-gray-400 dark:text-zinc-500">
-                                People
-                            </p>
+                                text-gray-400 dark:text-zinc-500">People</p>
                             {searchLoading && (
                                 <div className="flex justify-center py-6">
                                     <div className="w-4 h-4 border-2 border-t-blue-500 rounded-full animate-spin
@@ -369,9 +417,7 @@ export default function ChatPage() {
                                 <>
                                     <p className="px-4 py-2 mt-1 text-xs font-medium uppercase tracking-wide
                                         text-gray-400 dark:text-zinc-500
-                                        border-t border-gray-100 dark:border-zinc-800">
-                                        Recent
-                                    </p>
+                                        border-t border-gray-100 dark:border-zinc-800">Recent</p>
                                     {filteredConvos.map(c => (
                                         <ConvoItem key={c.username} convo={c}
                                             active={c.username === activeUser}
@@ -391,7 +437,9 @@ export default function ChatPage() {
                             {!convosLoading && conversations.length === 0 && (
                                 <div className="flex flex-col items-center gap-3 py-12 px-4 text-center">
                                     <div className="w-12 h-12 rounded-full flex items-center justify-center
-                                        text-2xl bg-gray-100 dark:bg-zinc-900"><HiMagnifyingGlass /></div>
+                                        text-2xl bg-gray-100 dark:bg-zinc-900 text-gray-400">
+                                        <HiMagnifyingGlass />
+                                    </div>
                                     <p className="text-sm text-gray-500 dark:text-zinc-400">
                                         Search for someone above to start your first conversation
                                     </p>
@@ -407,15 +455,13 @@ export default function ChatPage() {
                 </div>
             </div>
 
-            {/* ══ RIGHT PANEL — chat window ══ */}
-            <div className={`
-                flex-1 flex flex-col min-w-0
-                bg-white dark:bg-black
-                ${activeUser ? 'flex' : 'hidden md:flex'}
-            `}>
+            {/* ══ RIGHT PANEL ══ */}
+            <div className={`flex-1 flex flex-col min-w-0 bg-white dark:bg-black
+                ${activeUser ? 'flex' : 'hidden md:flex'}`}>
+
                 {!activeUser ? <EmptyChat /> : (
                     <>
-                        {/* Chat header — fixed height */}
+                        {/* Chat header */}
                         <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0
                             backdrop-blur-md bg-white/90 dark:bg-black/90
                             border-b border-gray-100 dark:border-zinc-800">
@@ -427,7 +473,7 @@ export default function ChatPage() {
                                 <HiArrowLeft />
                             </button>
                             <Link to={`/${activeUser}`}
-                                className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+                                className="flex items-center gap-2.5 hover:opacity-80 transition-opacity flex-1">
                                 <Avatar username={activeUser} src={activeConvo?.avatar} size={36} />
                                 <div>
                                     <p className="font-semibold text-sm leading-tight
@@ -439,15 +485,27 @@ export default function ChatPage() {
                                             ? <span className="text-blue-500">● Connected</span>
                                             : wsStatus === 'connecting'
                                                 ? <span className="text-amber-500">● Connecting…</span>
-                                                : <span className="text-gray-400 dark:text-zinc-500">● Offline</span>
+                                                : wsStatus === 'error'
+                                                    ? <span className="text-red-400">● Error</span>
+                                                    : <span className="text-gray-400 dark:text-zinc-500">● Offline</span>
                                         }
                                     </p>
                                 </div>
                             </Link>
+
+                            {/* Retry button — single onClick, no duplicate */}
+                            {(wsStatus === 'closed' || wsStatus === 'error') && (
+                                <button
+                                    onClick={retryConnection}
+                                    className="text-xs text-blue-500 hover:underline px-2 py-1
+                                        rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors">
+                                    Retry
+                                </button>
+                            )}
                         </div>
 
-                        {/* Messages — scrollable, fills remaining space */}
-                        <div className="flex-1 overflow-y-auto px-4 py-4
+                        {/* Messages */}
+                        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-0.5
                             bg-gray-50 dark:bg-zinc-950">
                             {wsStatus === 'connecting' && (
                                 <div className="flex justify-center py-6">
@@ -455,9 +513,11 @@ export default function ChatPage() {
                                         border-gray-200 dark:border-zinc-700" />
                                 </div>
                             )}
-                            {wsStatus === 'error' && (
-                                <div className="text-center py-6 text-sm text-red-500">
-                                    Connection failed. Make sure your backend is running with Daphne.
+                            {(wsStatus === 'error' || wsStatus === 'closed') && messages.length === 0 && (
+                                <div className="text-center py-6 text-sm text-gray-400 dark:text-zinc-500">
+                                    {wsStatus === 'error'
+                                        ? 'Connection failed. Click Retry.'
+                                        : 'Disconnected. Click Retry to reconnect.'}
                                 </div>
                             )}
                             {messages.length === 0 && wsStatus === 'open' && (
@@ -472,7 +532,7 @@ export default function ChatPage() {
                             <div ref={bottomRef} />
                         </div>
 
-                        {/* Input — fixed at bottom, never scrolls away */}
+                        {/* Input */}
                         <div className="flex-shrink-0 px-4 py-3
                             border-t border-gray-100 dark:border-zinc-800
                             bg-white dark:bg-black">
@@ -488,6 +548,7 @@ export default function ChatPage() {
                                     className="flex-1 bg-transparent outline-none text-sm resize-none
                                         max-h-28 py-1 text-gray-900 dark:text-zinc-100
                                         placeholder:text-gray-400 dark:placeholder:text-zinc-500"
+                                    style={{ minHeight: '24px' }}
                                 />
                                 <button
                                     onClick={sendMessage}
