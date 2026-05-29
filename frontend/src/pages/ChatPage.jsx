@@ -224,9 +224,9 @@ export default function ChatPage() {
         setWsStatus('connecting')
 
         const token = localStorage.getItem('access_token')
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-        const wsHost = import.meta.env.VITE_WS_HOST || 'localhost:8000'
-        const ws = new WebSocket(`${wsProtocol}://${wsHost}/ws/chat/${activeUser}/?token=${token}`)
+        const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
+        const host = import.meta.env.VITE_WS_HOST || 'localhost:8000'
+        const url = `${proto}://${host}/ws/chat/${targetUser}/?token=${token}`
         wsRef.current = ws
 
         ws.onopen = () => { setWsStatus('open'); loadConversations() }
