@@ -34,7 +34,7 @@ function Avatar({ username, src, size = 40 }) {
   return (
     <div
       className={`rounded-full flex items-center justify-center
-        font-bold flex-shrink-0 ${cls}`}
+        font-bold flex-shrink-0 leading-none ${cls}`}
       style={{ width: size, height: size, fontSize: size * 0.38 }}
     >
       {username ? username[0].toUpperCase() : '?'}
@@ -64,30 +64,6 @@ function ImagesGrid({ images }) {
   )
 }
 
-/* ── Action button ── */
-function ActionBtn({ onClick, icon, label, hoverColor, activeColor, active }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`group flex items-center gap-1 bg-transparent border-none
-        cursor-pointer transition-colors
-        ${active ? activeColor : 'text-gray-500'}`}
-    >
-      <span className={`flex items-center justify-center p-1.5 rounded-full
-        text-xl transition-colors
-        ${active
-          ? `${activeColor}`
-          : `group-hover:${hoverColor.bg} group-hover:${hoverColor.text}`
-        }`}>
-        {icon}
-      </span>
-      {label !== undefined && (
-        <span className="text-xs font-medium">{label}</span>
-      )}
-    </button>
-  )
-}
-
 /* ── TweetCard ── */
 export default function TweetCard({ tweet, onDelete, onLikeToggle }) {
   const { user } = useAuthStore()
@@ -110,7 +86,7 @@ export default function TweetCard({ tweet, onDelete, onLikeToggle }) {
     const wasLiked = tweet.is_liked
     const wasCount = tweet.likes_count ?? 0
 
-    // Instant UI update before API
+    // 1. Instant optimistic update — no waiting
     onLikeToggle?.(tweet.id, {
       is_liked: !wasLiked,
       likes_count: wasLiked ? wasCount - 1 : wasCount + 1,
@@ -118,9 +94,14 @@ export default function TweetCard({ tweet, onDelete, onLikeToggle }) {
 
     try {
       const { data } = await tweetsAPI.toggleLike(tweet.id)
-      onLikeToggle?.(tweet.id, data)
+      // 2. Sync with real server value
+      // Backend returns { is_liked, likes_count } — use directly
+      onLikeToggle?.(tweet.id, {
+        is_liked: data.is_liked,
+        likes_count: data.likes_count,
+      })
     } catch {
-      // Revert on failure
+      // 3. Revert on failure
       onLikeToggle?.(tweet.id, { is_liked: wasLiked, likes_count: wasCount })
     } finally {
       setLikeLoading(false)
@@ -178,7 +159,7 @@ export default function TweetCard({ tweet, onDelete, onLikeToggle }) {
           username={tweet.author?.username || '?'}
           src={tweet.author?.avatar}
         />
-      </Link>>
+      </Link>
 
       {/* Body */}
       <div className="flex-1 min-w-0">
