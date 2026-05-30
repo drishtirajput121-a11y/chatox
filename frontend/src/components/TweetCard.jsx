@@ -106,11 +106,25 @@ export default function TweetCard({ tweet, onDelete, onLikeToggle }) {
     e.stopPropagation()
     if (likeLoading) return
     setLikeLoading(true)
+
+    const wasLiked = tweet.is_liked
+    const wasCount = tweet.likes_count ?? 0
+
+    // Instant UI update before API
+    onLikeToggle?.(tweet.id, {
+      is_liked: !wasLiked,
+      likes_count: wasLiked ? wasCount - 1 : wasCount + 1,
+    })
+
     try {
       const { data } = await tweetsAPI.toggleLike(tweet.id)
       onLikeToggle?.(tweet.id, data)
-    } catch { }
-    finally { setLikeLoading(false) }
+    } catch {
+      // Revert on failure
+      onLikeToggle?.(tweet.id, { is_liked: wasLiked, likes_count: wasCount })
+    } finally {
+      setLikeLoading(false)
+    }
   }
 
   const handleDelete = async (e) => {
