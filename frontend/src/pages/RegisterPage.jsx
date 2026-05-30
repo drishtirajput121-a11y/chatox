@@ -18,7 +18,7 @@ export default function RegisterPage() {
     setError('')
     try {
       await register(form)
-    } } catch (err) {
+    } catch (err) {
       if (err.response?.status === 429) {
         setError('Too many requests. Please wait a moment and try again.')
       } else {
@@ -27,7 +27,8 @@ export default function RegisterPage() {
         setError(msg)
       }
     } finally {
-    setLoading(false)
+      setLoading(false)
+    }
   }
 
   const inputCls = `border border-[var(--border-strong)] rounded-xl px-3.5 py-3
