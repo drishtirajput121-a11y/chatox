@@ -11,4 +11,6 @@ urlpatterns = [
     path('<str:username>/follow/', views.FollowView.as_view()),
     path('<str:username>/followers/', views.FollowersListView.as_view()),
     path('<str:username>/following/', views.FollowingListView.as_view()),
+    path('register/send-otp/', views.SendOTPView.as_view()),
+    path('register/verify-otp/', views.VerifyOTPView.as_view()),
 ]

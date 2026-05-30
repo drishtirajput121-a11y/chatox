@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from './context/authStore'
 import Layout from './components/Layout'
 import LoginPage from './pages/LoginPage'
@@ -12,6 +12,7 @@ import NotificationsPage from './pages/NotificationsPage'
 import SettingsPage from './pages/SettingsPage'
 import ChatPage from './pages/ChatPage'
 import { useThemeStore } from './context/themeStore'
+import OTPPage from './pages/OTPPage'
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuthStore()
@@ -23,6 +24,12 @@ function GuestOnly({ children }) {
   const { user, loading } = useAuthStore()
   if (loading) return null
   return user ? <Navigate to="/" replace /> : children
+}
+
+function RequireOTPState({ children }) {
+  const location = useLocation()
+  if (!location.state?.email) return <Navigate to="/register" replace />
+  return children
 }
 
 export default function App() {
@@ -42,6 +49,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
         <Route path="/register" element={<GuestOnly><RegisterPage /></GuestOnly>} />
+        <Route path="/verify-otp" element={<RequireOTPState><OTPPage /></RequireOTPState>} />
         <Route path="/" element={<RequireAuth><Layout /></RequireAuth>}>
           <Route index element={<FeedPage />} />
           <Route path="explore" element={<ExplorePage />} />
