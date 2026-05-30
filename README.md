@@ -51,28 +51,28 @@ graph TD
 ```
 
 ---
-
 ## Technical Specifications
-
+ 
 ### Frontend Technology Stack
-*   **Core Framework:** React 18+ bootstrapped with Vite for fast HMR compilation.
+*   **Core Framework:** React 18+ with Vite for fast HMR compilation.
 *   **State Management:** Zustand (for client-side auth context, theme settings, and real-time notification states).
 *   **Routing:** React Router DOM (implementing declarative route protection and layout nests).
 *   **Network Protocol:** Axios client with automated interceptors for persistent bearer token authentication.
-*   **Styling & Theme:** Tailwind CSS combined with CSS Modules supporting reactive system-wide Dark Mode.
+*   **Styling & Theme:** Tailwind CSS supporting reactive system-wide Dark Mode.
 *   **Iconography:** React Icons (Heroicons v2).
-
 ### Backend Technology Stack
 *   **Core Framework:** Django 5.1 (configured as a modular API provider and ASGI WebSocket coordinator).
 *   **API Architecture:** Django REST Framework (DRF) with custom serialization pipelines.
 *   **Authentication:** JSON Web Tokens (SimpleJWT) with short-lived access keys and secure rotation.
 *   **WebSocket Engine:** ASGI-compliant Django Channels integrating a Redis channel layer broker.
 *   **Worker Pipelines:** Celery Async Task Processor executing background scheduled delivery jobs.
+*   **Performance:**
+    *   **N+1 Query Prevention:** Strategic use of `select_related` and `prefetch_related` across all list endpoints to eliminate redundant database queries.
+    *   **API Throttling:** DRF throttle classes applied globally and per-endpoint to rate-limit requests and protect against abuse.
 *   **Persistence Stores:**
     *   **PostgreSQL:** Relational database storage for complex user profiles, feed trees, relations, and messages.
     *   **Redis:** In-memory caching, message broker for Celery, and pub/sub layer for WebSocket routing.
     *   **Cloudinary:** Content Delivery Network (CDN) cloud storage for optimized user avatars, banners, and multi-image post media.
-
 ---
 
 ## Interactive Interface Visual Showcases
