@@ -10,8 +10,8 @@ import {
   HiHome, HiMagnifyingGlass, HiBell, HiCog6Tooth, HiUser,
   HiChatBubbleLeftRight, HiArrowRightOnRectangle, HiSun, HiMoon
 } from 'react-icons/hi2'
-import { FaReact } from 'react-icons/fa'
 import FooterCards from '../components/FooterCards'
+
 /* ── TrendingCard ── */
 function TrendingCard() {
   const [trends, setTrends] = useState([])
@@ -32,14 +32,11 @@ function TrendingCard() {
         border-b border-gray-200 dark:border-gray-800">
         What's happening
       </h2>
-
       {loading && (
         <div className="flex justify-center py-6">
-          <div className="w-4 h-4 border-2 border-gray-200 border-t-blue-500
-            rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
         </div>
       )}
-
       {!loading && trends.length === 0 && (
         <div className="px-4 py-3 flex flex-col gap-1">
           <span className="text-xs text-gray-500">No trends yet</span>
@@ -48,7 +45,6 @@ function TrendingCard() {
           </span>
         </div>
       )}
-
       {trends.map((t, i) => (
         <div
           key={t.tag}
@@ -111,7 +107,7 @@ export default function Layout() {
         max-md:h-14 max-md:flex-row max-md:border-t max-md:border-r-0
         max-md:bg-white max-md:dark:bg-black max-md:z-50 max-md:px-0 max-md:py-0">
 
-        {/* Logo */}
+        {/* Logo — desktop only */}
         <div
           onClick={() => navigate('/')}
           className="flex items-center gap-3 px-3 py-3 rounded-full cursor-pointer
@@ -127,7 +123,8 @@ export default function Layout() {
         {/* Nav */}
         <nav className="flex flex-col gap-1 flex-1
           max-md:flex-row max-md:flex-none max-md:w-full
-          max-md:justify-around max-md:items-center">
+          max-md:justify-around max-md:items-center max-md:px-1">
+
           {navItems.map(({ to, icon: Icon, label, exact }) => {
             const isChat = label === 'Chat'
             return (
@@ -144,7 +141,6 @@ export default function Layout() {
                   ${isActive ? 'font-bold' : 'font-normal'}`
                 }
               >
-                {/* icon + badge */}
                 <span className="relative flex items-center justify-center text-[1.6rem]">
                   <Icon />
                   {isChat && unreadCount > 0 && (
@@ -160,7 +156,7 @@ export default function Layout() {
             )
           })}
 
-          {/* Post button */}
+          {/* Post button — desktop only */}
           {user && (
             <button
               onClick={handlePostClick}
@@ -174,9 +170,8 @@ export default function Layout() {
           )}
         </nav>
 
-        {/* Bottom section */}
+        {/* Bottom section — desktop only */}
         <div className="flex flex-col gap-3 mt-auto max-md:hidden">
-          {/* Theme toggle */}
           <button
             onClick={toggle}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
@@ -194,7 +189,6 @@ export default function Layout() {
             </span>
           </button>
 
-          {/* User chip */}
           {user && (
             <div className="flex items-center gap-3 px-3 py-3 rounded-full
               hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors w-full">
@@ -215,7 +209,8 @@ export default function Layout() {
                 onClick={handleLogout}
                 title="Logout"
                 className="p-1.5 rounded-full text-gray-400 text-2xl flex items-center
-                  hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                  transition-colors"
               >
                 <HiArrowRightOnRectangle />
               </button>
@@ -235,8 +230,6 @@ export default function Layout() {
       <aside className="w-80 min-w-[320px] sticky top-0 h-screen
         px-6 py-3 flex flex-col gap-4 overflow-y-auto
         max-[1095px]:hidden">
-
-        {/* Search */}
         <div className="sticky top-0 bg-white dark:bg-black pb-3 pt-1 z-10">
           <div className="relative">
             <HiMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2
@@ -256,11 +249,7 @@ export default function Layout() {
             />
           </div>
         </div>
-
-        {/* Trending */}
         <TrendingCard />
-
-        {/* Footer */}
         <FooterCards />
       </aside>
 

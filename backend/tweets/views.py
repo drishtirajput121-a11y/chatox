@@ -144,9 +144,14 @@ class LikeToggleView(APIView):
         if not created:
             like.delete()
             return Response({
-                'status': 'unliked',
+                'is_liked': False,
                 'likes_count': tweet.likes_count
             })
+
+        return Response({
+            'is_liked': True,
+            'likes_count': tweet.likes_count
+        })
 
         # create notification when tweet is liked
         if tweet.author != request.user:

@@ -1,13 +1,15 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { usersAPI } from '../api/client'
 import { useAuthStore } from '../context/authStore'
 import { useThemeStore } from '../context/themeStore'
-import { HiSun, HiMoon } from 'react-icons/hi2'
+import { HiSun, HiMoon, HiArrowRightOnRectangle } from 'react-icons/hi2'
 import PageLogo from '../components/PageLogo'
 
 export default function SettingsPage() {
-  const { user, updateUser } = useAuthStore()
+  const { user, updateUser, logout } = useAuthStore()
   const { theme, setTheme } = useThemeStore()
+  const navigate = useNavigate()
 
   const [form, setForm] = useState({
     first_name: user?.first_name || '',
@@ -38,6 +40,11 @@ export default function SettingsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
   }
 
   const inputCls = `border border-[var(--border-strong)] rounded-xl px-3.5 py-3
@@ -126,7 +133,9 @@ export default function SettingsPage() {
 
           {/* Bio */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--text-2)] uppercase tracking-wide">Bio</label>
+            <label className="text-xs font-semibold text-[var(--text-2)] uppercase tracking-wide">
+              Bio
+            </label>
             <textarea
               className={`${inputCls} resize-y`}
               rows={3}
@@ -136,7 +145,7 @@ export default function SettingsPage() {
             />
           </div>
 
-          {/* Submit */}
+          {/* Save */}
           <button
             type="submit"
             disabled={loading}
@@ -151,6 +160,24 @@ export default function SettingsPage() {
             )}
             {loading ? 'Saving…' : 'Save changes'}
           </button>
+
+          <div className="h-px bg-[var(--border)]" />
+
+          {/* Logout */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2
+              bg-transparent border border-red-300 dark:border-red-800
+              text-red-500 dark:text-red-400
+              hover:bg-red-50 dark:hover:bg-red-900/20
+              rounded-full py-3 text-sm font-bold
+              transition-colors duration-200 cursor-pointer"
+          >
+            <HiArrowRightOnRectangle className="text-lg" />
+            Log out
+          </button>
+
         </form>
       </div>
     </div>
