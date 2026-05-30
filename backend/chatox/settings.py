@@ -73,8 +73,6 @@ WSGI_APPLICATION = 'chatox.wsgi.application'
 ASGI_APPLICATION = 'chatox.asgi.application'
 
 # ── Database ──
-# Railway provides DATABASE_URL automatically
-# Falls back to individual env vars for local dev
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
@@ -95,6 +93,7 @@ else:
             'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
+
 # ── Auth ──
 AUTH_USER_MODEL = 'users.User'
 
@@ -132,21 +131,36 @@ if FRONTEND_URL:
 CORS_ALLOW_CREDENTIALS = True
 
 # ── Redis ──
-REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379')
+REDIS_URL = os.getenv('REDIS_URL')
+
+# ── Cache ──
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 # ── Django Channels ──
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [REDIS_URL],
+            'hosts': [REDIS_URL or 'redis://localhost:6379'],
         },
     },
 }
 
 # ── Celery ──
-CELERY_BROKER_URL = REDIS_URL
-CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_BROKER_URL = REDIS_URL or 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = REDIS_URL or 'redis://localhost:6379/0'
 CELERY_TIMEZONE = 'UTC'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
@@ -176,14 +190,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-# ── Cache ──
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379'),
-    }
-}
 
 # ── OpenRouter AI ──
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
