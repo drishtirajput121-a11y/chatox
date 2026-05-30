@@ -144,7 +144,7 @@ class SendOTPView(APIView):
         try:
             send_otp_email(email, otp, username)
         except Exception as e:
-            return Response({'error': 'Failed to send email. Check your email address.'}, status=500)
+            return Response({'error': f'Email failed: {type(e).__name__}: {str(e)}'}, status=500)
 
         # Increment send count after successful send
         cache.set(rate_key, send_count + 1, timeout=3600)
