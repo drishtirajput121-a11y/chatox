@@ -7,11 +7,13 @@ from django.contrib.auth import get_user_model
 from .serializers import RegisterSerializer, UserSerializer
 from notifications.models import Notification
 from django.shortcuts import get_object_or_404
-
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .throttles import LoginRateThrottle, RegisterRateThrottle
 User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
+    throttle_classes = [RegisterRateThrottle]
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
@@ -106,3 +108,5 @@ class FollowingListView(APIView):
             for u in following
         ]
         return Response(data)
+class LoginView(TokenObtainPairView):
+    throttle_classes = [LoginRateThrottle]

@@ -18,11 +18,15 @@ export default function LoginPage() {
     try {
       await login(form)
     } catch (err) {
-      setError(
-        err.response?.data?.detail ||
-        err.response?.data?.non_field_errors?.[0] ||
-        'Login failed. Check your credentials.'
-      )
+      if (err.response?.status === 429) {
+        setError('Too many login attempts. Please wait a moment and try again.')
+      } else {
+        setError(
+          err.response?.data?.detail ||
+          err.response?.data?.non_field_errors?.[0] ||
+          'Login failed. Check your credentials.'
+        )
+      }
     } finally {
       setLoading(false)
     }
