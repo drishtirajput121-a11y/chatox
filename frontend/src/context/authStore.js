@@ -13,24 +13,9 @@ export const useAuthStore = create((set, get) => ({
       const { data } = await usersAPI.me()
       set({ user: data, loading: false })
     } catch {
-      // token expired — try refreshing
-      const refresh = localStorage.getItem('refresh_token')
-      if (!refresh) {
-        localStorage.removeItem('access_token')
-        set({ user: null, loading: false })
-        return
-      }
-      try {
-        const { data } = await authAPI.refreshToken(refresh)
-        localStorage.setItem('access_token', data.access)
-        if (data.refresh) localStorage.setItem('refresh_token', data.refresh)
-        const me = await usersAPI.me()
-        set({ user: me.data, loading: false })
-      } catch {
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
-        set({ user: null, loading: false })
-      }
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      set({ user: null, loading: false })
     }
   },
 
@@ -39,13 +24,6 @@ export const useAuthStore = create((set, get) => ({
     const { data } = await authAPI.login(credentials)
     localStorage.setItem('access_token', data.access)
     localStorage.setItem('refresh_token', data.refresh)
-    const me = await usersAPI.me()
-    set({ user: me.data })
-    return me.data
-  },
-
-  // used after OTP verification — tokens already stored
-  setUserFromTokens: async () => {
     const me = await usersAPI.me()
     set({ user: me.data })
     return me.data

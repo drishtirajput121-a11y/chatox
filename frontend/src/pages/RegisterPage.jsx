@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { sendOTP } from '../api/auth'
+import { Link } from 'react-router-dom'
+import { useAuthStore } from '../context/authStore'
+import { FaReact } from 'react-icons/fa'
 
 export default function RegisterPage() {
-  const navigate = useNavigate()
+  const { register } = useAuthStore()
   const [form, setForm] = useState({ username: '', email: '', password: '', password2: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -12,105 +13,83 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (form.password !== form.password2) {
-      setError('Passwords do not match')
-      return
-    }
+    if (form.password !== form.password2) { setError('Passwords do not match'); return }
     setLoading(true)
     setError('')
     try {
-      await sendOTP(form.username, form.email, form.password, form.password2)
-      // pass email to OTP page
-      navigate('/verify-otp', { state: { email: form.email } })
+      await register(form)
     } catch (err) {
-      setError(
-        err.response?.data?.error ||
-        err.response?.data?.email?.[0] ||
-        err.response?.data?.username?.[0] ||
-        'Registration failed'
-      )
+      const d = err.response?.data
+      const msg = d?.username?.[0] || d?.email?.[0] || d?.password?.[0] || d?.detail || 'Registration failed'
+      setError(msg)
     } finally {
       setLoading(false)
     }
   }
 
-  const inputCls = `border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3
-        text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-900
-        w-full outline-none transition-all
-        focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20`
+  const inputCls = `border border-[var(--border-strong)] rounded-xl px-3.5 py-3
+    text-sm text-[var(--text-1)] bg-[var(--bg)] w-full outline-none
+    transition-[border-color,box-shadow] duration-200
+    focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_var(--accent-light)]`
 
   return (
-    <div className="min-h-screen flex items-center justify-center
-            bg-gray-50 dark:bg-gray-950 px-4 py-8">
-      <div className="w-full max-w-md bg-white dark:bg-black
-                border border-gray-200 dark:border-gray-800
-                rounded-2xl px-8 py-10
-                shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-2)] px-4 py-8">
+      <div className="w-full max-w-md bg-[var(--bg)] border border-[var(--border)]
+        rounded-2xl px-6 md:px-8 py-8 md:py-10 shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
 
-        <div className="flex items-center gap-3 text-blue-500
-                    text-2xl font-extrabold tracking-tight mb-6">
+        {/* Logo */}
+        <div className="flex items-center gap-3 text-[1.5rem] md:text-[1.6rem]
+          font-extrabold tracking-tight mb-6 text-[var(--accent)]">
           <img src="/chatox.png" alt="Chatox" className="w-10 h-10" />
           <span>Chatox</span>
         </div>
 
-        <h1 className="text-3xl font-extrabold tracking-tight
-                    text-gray-900 dark:text-white mb-2">
-          Create account
+        <h1 className="text-2xl md:text-[1.85rem] font-extrabold mb-6
+          text-[var(--text-1)] tracking-tight">
+          Create your account
         </h1>
-        <p className="text-sm text-gray-500 mb-6">
-          We'll send a verification code to your email
-        </p>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 text-red-500
-                        border border-red-200 dark:border-red-800
-                        rounded-xl px-4 py-3 text-sm font-medium mb-5">
+          <div className="bg-[var(--red-light)] text-[var(--red)] border border-[var(--red)]/20
+            rounded-xl px-4 py-2.5 text-sm font-medium mb-5">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {[
-            { key: 'username', label: 'Username', type: 'text' },
-            { key: 'email', label: 'Email', type: 'email' },
-            { key: 'password', label: 'Password', type: 'password' },
-            { key: 'password2', label: 'Confirm Password', type: 'password' },
-          ].map(({ key, label, type }) => (
-            <div key={key} className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            { key: 'username', label: 'Username', type: 'text', auto: 'username' },
+            { key: 'email', label: 'Email', type: 'email', auto: 'email' },
+            { key: 'password', label: 'Password', type: 'password', auto: 'new-password' },
+            { key: 'password2', label: 'Confirm password', type: 'password', auto: 'new-password' },
+          ].map(({ key, label, type, auto }) => (
+            <div className="flex flex-col gap-1.5" key={key}>
+              <label className="text-xs font-semibold text-[var(--text-2)] uppercase tracking-wide">
                 {label}
               </label>
               <input
-                type={type}
-                value={form[key]}
-                onChange={set(key)}
-                required
-                className={inputCls}
+                className={inputCls} type={type}
+                value={form[key]} onChange={set(key)} autoComplete={auto}
               />
             </div>
           ))}
 
           <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 w-full flex items-center justify-center gap-2
-                            bg-blue-500 hover:bg-blue-600 text-white font-bold
-                            text-sm py-3 rounded-full
-                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            type="submit" disabled={loading}
+            className="w-full flex items-center justify-center gap-2
+              bg-[var(--accent)] hover:bg-[var(--accent-hover)]
+              disabled:opacity-50 disabled:cursor-not-allowed
+              text-white border-none rounded-full py-3 text-sm font-bold mt-2
+              transition-[background-color,opacity] duration-200 cursor-pointer"
           >
-            {loading && (
-              <span className="w-4 h-4 border-2 border-white/30
-                                border-t-white rounded-full animate-spin" />
-            )}
-            {loading ? 'Sending code…' : 'Send verification code'}
+            {loading && <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />}
+            {loading ? 'Creating…' : 'Join Chatox'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center mt-6 text-sm text-[var(--text-2)]">
           Already have an account?{' '}
-          <Link to="/login" className="text-blue-500 font-bold hover:underline">
-            Sign in
-          </Link>
+          <Link to="/login" className="text-[var(--accent)] font-bold hover:underline">Sign in</Link>
         </p>
       </div>
     </div>
