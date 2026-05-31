@@ -68,10 +68,10 @@ class FollowView(APIView):
             return Response({'status': 'unfollowed'})
         request.user.following.add(target)
         Notification.objects.get_or_create(
-    recipient=target,
-    sender=request.user,
-    notification_type=Notification.FOLLOW,
-)
+            recipient=target,
+            sender=request.user,
+            notification_type=Notification.FOLLOW,
+        )
         return Response({'status': 'followed'})
 
 class FollowersListView(APIView):

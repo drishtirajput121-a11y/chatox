@@ -117,10 +117,10 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '30/minute',
-        'user': '200/minute',
-        'login': '5/minute',
-        'register': '3/10seconds', 
+        'anon': '60/m',
+        'user': '300/m',
+        'login': '10/m',
+        'register': '10/h',
     },
 }
 
@@ -200,14 +200,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-# ── Cache ──
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379'),
-    }
-}
 
 # ── OpenRouter AI ──
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
