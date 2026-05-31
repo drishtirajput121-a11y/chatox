@@ -90,6 +90,7 @@ export const tweetsAPI = {
   create: (data) => api.post('/tweets/', data),
   votePoll: (optionId) => api.post(`/tweets/poll/vote/${optionId}/`),
   delete: (pk) => api.delete(`/tweets/${pk}/`),
+  update: (pk, data) => api.patch(`/tweets/${pk}/`, data),
   toggleLike: (pk) => api.post(`/tweets/${pk}/like/`),
   generateCaption: (hint) => api.post('/tweets/generate-caption/', { hint }),
 }

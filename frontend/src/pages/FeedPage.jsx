@@ -35,6 +35,9 @@ export default function FeedPage() {
       t.id === id ? { ...t, is_liked: data.is_liked, likes_count: data.likes_count } : t
     ))
   }
+  const handleEdit = (id, data) => {
+    setTweets(prev => prev.map(t => t.id === id ? { ...t, ...data } : t))
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-black pb-16 md:pb-0">
@@ -126,6 +129,7 @@ export default function FeedPage() {
           tweet={tweet}
           onDelete={handleDelete}
           onLikeToggle={handleLikeToggle}
+          onEdit={handleEdit}
         />
       ))}
     </div>

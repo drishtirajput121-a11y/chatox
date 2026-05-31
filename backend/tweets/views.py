@@ -130,7 +130,7 @@ class TweetListCreateView(TweetContextMixin, generics.ListCreateAPIView):
             )
 
 
-class TweetDetailView(generics.RetrieveDestroyAPIView):
+class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TweetSerializer
 
     def get_queryset(self):
@@ -153,6 +153,13 @@ class TweetDetailView(generics.RetrieveDestroyAPIView):
                 ).values_list('option_id', flat=True)
             )
         return context
+
+    def update(self, request, *args, **kwargs):
+        tweet = self.get_object()
+        if tweet.author != request.user:
+            return Response({'error': 'Not your tweet'}, status=403)
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         tweet = self.get_object()
