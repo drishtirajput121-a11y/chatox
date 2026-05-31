@@ -44,7 +44,7 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="flex items-center gap-3 text-[1.5rem] md:text-[1.6rem]
           font-extrabold tracking-tight mb-6 text-[var(--accent)]">
-          <img src="/chatox.png" alt="Chatox" className="w-10 h-10" />
+          <img src="/chatox.jpg" alt="Chatox" className="w-10 h-10" />
           <span>Chatox</span>
         </div>
 

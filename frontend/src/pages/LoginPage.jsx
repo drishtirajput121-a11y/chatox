@@ -47,7 +47,7 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="flex items-center gap-3 text-blue-500 text-2xl font-extrabold tracking-tight mb-6">
-          <img src="/chatox.png" alt="Chatox" className="w-10 h-10" />
+          <img src="/chatox.jpg" alt="Chatox" className="w-10 h-10" />
           <span>Chatox</span>
         </div>
 

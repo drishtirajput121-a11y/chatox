@@ -114,7 +114,7 @@ export default function Layout() {
             hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors
             w-fit mb-2 max-md:hidden"
         >
-          <img src="/chatox.png" alt="Chatox" className="w-13 h-8" />
+          <img src="/chatox.jpg" alt="Chatox" className="w-13 h-8" />
           <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             Chatox
           </span>
