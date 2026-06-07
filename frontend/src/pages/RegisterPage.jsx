@@ -62,7 +62,7 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {[
-            { key: 'username', label: 'Username', type: 'text', auto: 'username' },
+            { key: 'username', label: 'Username', type: 'text', auto: 'off' },
             { key: 'email', label: 'Email', type: 'email', auto: 'email' },
             { key: 'password', label: 'Password', type: 'password', auto: 'new-password' },
             { key: 'password2', label: 'Confirm password', type: 'password', auto: 'new-password' },
