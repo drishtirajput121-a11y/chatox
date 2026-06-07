@@ -245,7 +245,7 @@ export default function Layout() {
               text-gray-400 text-xl pointer-events-none" />
             <input
               type="text"
-              placeholder="Search Chatox"
+              placeholder="Search here"
               className="w-full bg-gray-100 dark:bg-gray-900 border border-transparent
                 text-gray-900 dark:text-white placeholder-gray-500
                 pl-12 pr-4 py-3 rounded-full text-sm outline-none
