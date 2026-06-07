@@ -192,11 +192,20 @@ export default function Layout() {
           {user && (
             <div className="flex items-center gap-3 px-3 py-3 rounded-full
               hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors w-full">
-              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900
-                text-blue-600 dark:text-blue-300 font-bold text-lg flex items-center
-                justify-center flex-shrink-0 border border-gray-200 dark:border-gray-700">
-                {user.username[0].toUpperCase()}
-              </div>
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.username}
+                  className="w-10 h-10 rounded-full object-cover flex-shrink-0
+      border border-gray-200 dark:border-gray-700"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900
+    text-blue-600 dark:text-blue-300 font-bold text-lg flex items-center
+    justify-center flex-shrink-0 border border-gray-200 dark:border-gray-700">
+                  {user.username[0].toUpperCase()}
+                </div>
+              )}
               <div className="flex-1 flex flex-col min-w-0">
                 <span className="text-sm font-bold text-gray-900 dark:text-white truncate">
                   {user.first_name || user.username}
