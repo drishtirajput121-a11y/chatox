@@ -43,17 +43,75 @@ function Avatar({ username, src, size = 40 }) {
 /* ── Images grid ── */
 function ImagesGrid({ images }) {
   if (!images?.length) return null
+
+  const [current, setCurrent] = useState(0)
+  const [paddingBottom, setPaddingBottom] = useState('56.25%')
+
+  const handleLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.target
+    const ratio = naturalWidth / naturalHeight
+    if (ratio >= 1.6) setPaddingBottom('56.25%')       // 16:9
+    else if (ratio >= 0.9) setPaddingBottom('100%')    // 1:1
+    else setPaddingBottom('125%')                       // 4:5
+  }
+
+  const prev = (e) => {
+    e.stopPropagation()
+    setCurrent(i => (i - 1 + images.length) % images.length)
+  }
+
+  const next = (e) => {
+    e.stopPropagation()
+    setCurrent(i => (i + 1) % images.length)
+  }
+
   return (
     <div
-      className={`grid gap-1 mt-2 rounded-2xl overflow-hidden
-        border border-gray-200 dark:border-gray-800
-        ${images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}
+      className="relative mt-2 rounded-2xl overflow-hidden
+        border border-gray-200 dark:border-gray-800 w-full"
+      style={{ paddingBottom }}
       onClick={e => e.stopPropagation()}
     >
-      {images.map(img => (
-        <img key={img.id} src={img.image} alt="tweet media"
-          className="w-full h-48 object-cover" />
-      ))}
+      <img
+        src={images[current].image}
+        alt="tweet media"
+        onLoad={handleLoad}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+
+      {images.length > 1 && (
+        <>
+          <button onClick={prev}
+            className="absolute left-2 top-1/2 -translate-y-1/2
+              w-8 h-8 rounded-full bg-black/50 hover:bg-black/75
+              text-white flex items-center justify-center
+              transition-colors text-lg font-bold">
+            ‹
+          </button>
+          <button onClick={next}
+            className="absolute right-2 top-1/2 -translate-y-1/2
+              w-8 h-8 rounded-full bg-black/50 hover:bg-black/75
+              text-white flex items-center justify-center
+              transition-colors text-lg font-bold">
+            ›
+          </button>
+
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2
+            flex items-center gap-1.5">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={e => { e.stopPropagation(); setCurrent(i) }}
+                className={`rounded-full transition-all
+                  ${i === current
+                    ? 'w-4 h-1.5 bg-white'
+                    : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/75'
+                  }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -20,14 +20,14 @@ export default function MediaPreviews({ previews, onRemove }) {
                     <img
                         src={p.url}
                         alt={`upload-${i}`}
-                        className="w-full h-40 object-cover"
+                        className="w-full object-contain"
                     />
                     <button
                         type="button"
                         onClick={() => onRemove(i)}
-                        className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full 
-              bg-black/60 hover:bg-black/80 flex items-center justify-center 
-              transition-colors"
+                        className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full
+                            bg-black/60 hover:bg-black/80 flex items-center justify-center
+                            transition-colors"
                     >
                         <HiXMark className="w-3.5 h-3.5 text-white" />
                     </button>
