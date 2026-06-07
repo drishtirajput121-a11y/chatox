@@ -260,7 +260,7 @@ export default function ProfilePage() {
             <div className="ring-4 ring-white dark:ring-black rounded-full overflow-hidden w-16 h-16 md:w-20 md:h-20">
               {avatarSrc
                 ? <img src={avatarSrc} alt={username} className="w-full h-full object-cover" />
-                : <Avatar username={username} size={window.innerWidth < 768 ? 64 : 80} />
+                : <Avatar username={username} src={avatarSrc} size={80} />
               }
             </div>
             {isMe && (

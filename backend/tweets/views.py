@@ -3,8 +3,8 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Tweet, Like, TweetImage, Poll, PollOption, PollVote
-from .serializers import TweetSerializer, PollSerializer
+from .models import Tweet, Like, TweetImage, Poll, PollOption, PollVote, Reply
+from .serializers import TweetSerializer, PollSerializer, ReplySerializer
 from notifications.models import Notification
 import json
 from django.utils import timezone
@@ -288,3 +288,39 @@ class TrendingHashtagsView(APIView):
             }
             for t in scored[:5]
         ])
+
+class ReplyListCreateView(generics.ListCreateAPIView):
+    serializer_class = ReplySerializer
+
+    def get_queryset(self):
+        return Reply.objects.filter(
+            tweet_id=self.kwargs['pk']
+        ).select_related('author').order_by('created_at')
+
+    def perform_create(self, serializer):
+        tweet = Tweet.objects.get(pk=self.kwargs['pk'])
+        reply = serializer.save(author=self.request.user, tweet=tweet)
+
+        # notify tweet author
+        if tweet.author != self.request.user:
+            Notification.objects.get_or_create(
+                recipient=tweet.author,
+                sender=self.request.user,
+                notification_type=Notification.REPLY,
+                tweet=tweet,
+            )
+        return reply
+
+
+class ReplyDeleteView(generics.DestroyAPIView):
+    serializer_class = ReplySerializer
+
+    def get_queryset(self):
+        return Reply.objects.filter(author=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        reply = self.get_object()
+        if reply.author != request.user:
+            return Response({'error': 'Not your reply'}, status=403)
+        reply.delete()
+        return Response(status=204)

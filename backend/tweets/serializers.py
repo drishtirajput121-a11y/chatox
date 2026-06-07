@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Tweet
 from users.serializers import UserSerializer
 from .models import TweetImage
-from .models import Tweet, TweetImage, Poll, PollOption, PollVote
+from .models import Tweet, TweetImage, Poll, PollOption, PollVote, Reply
 
 class TweetImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -82,8 +82,10 @@ class TweetSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Tweet cannot be empty.')
         return value
 
+class ReplySerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
 
-
-
-
-
+    class Meta:
+        model = Reply
+        fields = ['id', 'author', 'content', 'created_at']
+        read_only_fields = ['id', 'author', 'created_at']

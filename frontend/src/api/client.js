@@ -92,6 +92,9 @@ export const tweetsAPI = {
   delete: (pk) => api.delete(`/tweets/${pk}/`),
   update: (pk, data) => api.patch(`/tweets/${pk}/`, data),
   toggleLike: (pk) => api.post(`/tweets/${pk}/like/`),
+  getReplies: (pk) => api.get(`/tweets/${pk}/replies/`),
+  createReply: (pk, content) => api.post(`/tweets/${pk}/replies/`, { content }),
+  deleteReply: (replyId) => api.delete(`/tweets/replies/${replyId}/`),
   generateCaption: (hint) => api.post('/tweets/generate-caption/', { hint }),
 }
 

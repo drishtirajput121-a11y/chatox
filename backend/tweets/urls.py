@@ -9,4 +9,6 @@ urlpatterns = [
     path('poll/vote/<int:option_id>/', views.PollVoteView.as_view()),
     path('trending/', views.TrendingHashtagsView.as_view()),
     path('generate-caption/', GenerateCaptionView.as_view()),
+    path('replies/<int:pk>/', views.ReplyDeleteView.as_view()),
+    path('<int:pk>/replies/', views.ReplyListCreateView.as_view()),
 ]
