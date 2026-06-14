@@ -3,6 +3,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import dj_database_url
 import os
+import ssl
 
 load_dotenv()
 
@@ -40,7 +41,7 @@ INSTALLED_APPS = [
 
 # ── Middleware ──
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # must be first
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -146,18 +147,18 @@ CORS_ALLOW_CREDENTIALS = True
 
 # ── Redis ──
 REDIS_URL = os.getenv('REDIS_URL')
+IS_REDIS_SSL = REDIS_URL and REDIS_URL.startswith('rediss://')
 
 # ── Cache ──
 if REDIS_URL:
-    # Upstash uses rediss:// (SSL) — handle both
+    cache_options = {'socket_connect_timeout': 5, 'socket_timeout': 5}
+    if IS_REDIS_SSL:
+        cache_options['ssl_cert_reqs'] = ssl.CERT_NONE
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': REDIS_URL,
-            'OPTIONS': {
-                'socket_connect_timeout': 5,
-                'socket_timeout': 5,
-            }
+            'OPTIONS': cache_options,
         }
     }
 else:
@@ -168,20 +169,37 @@ else:
     }
 
 # ── Django Channels ──
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [REDIS_URL or 'redis://localhost:6379'],
+if IS_REDIS_SSL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [{
+                    'address': REDIS_URL,
+                    'ssl_cert_reqs': ssl.CERT_NONE,
+                }],
+            },
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [REDIS_URL or 'redis://localhost:6379'],
+            },
+        },
+    }
 
 # ── Celery ──
 CELERY_BROKER_URL = REDIS_URL or 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = REDIS_URL or 'redis://localhost:6379/0'
 CELERY_TIMEZONE = 'UTC'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+if IS_REDIS_SSL:
+    CELERY_BROKER_USE_SSL = {'ssl_cert_reqs': ssl.CERT_NONE}
+    CELERY_REDIS_BACKEND_USE_SSL = {'ssl_cert_reqs': ssl.CERT_NONE}
 
 # ── Cloudinary ──
 CLOUDINARY_STORAGE = {
@@ -200,7 +218,6 @@ STORAGES = {
     },
 }
 
-# Legacy — required by older django-cloudinary-storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
