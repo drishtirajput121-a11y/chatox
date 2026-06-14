@@ -24,7 +24,7 @@ def health(request):
     return JsonResponse({'status': 'ok'})
 
 urlpatterns = [
-    path('', health),
+    path('/', health),
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
     path('api/tweets/', include('tweets.urls')),
