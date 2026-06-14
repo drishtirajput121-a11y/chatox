@@ -7,7 +7,9 @@ def publish_scheduled_tweet(tweet_id):
     try:
         tweet = Tweet.objects.get(pk=tweet_id, is_published=False)
         if tweet.scheduled_at and tweet.scheduled_at <= timezone.now():
-            tweet.is_published = True
-            tweet.save()
+            Tweet.objects.filter(pk=tweet_id).update(
+                is_published=True,
+                created_at=timezone.now()
+            )
     except Tweet.DoesNotExist:
         pass
