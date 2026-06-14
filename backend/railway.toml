@@ -3,6 +3,6 @@ builder = "nixpacks"
 
 [deploy]
 startCommand = "daphne -b 0.0.0.0 -p $PORT chatox.asgi:application"
-healthcheckPath = "/health/"
+healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
