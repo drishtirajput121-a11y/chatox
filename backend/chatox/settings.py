@@ -148,10 +148,15 @@ REDIS_URL = os.getenv('REDIS_URL')
 
 # ── Cache ──
 if REDIS_URL:
+    # Upstash uses rediss:// (SSL) — handle both
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'socket_connect_timeout': 5,
+                'socket_timeout': 5,
+            }
         }
     }
 else:
