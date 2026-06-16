@@ -371,7 +371,8 @@ All API requests must contain the `Authorization: Bearer <access_token>` header,
 
 ### Prerequisites
 *   Python 3.10+
-*   Node.js 18+ & npm
+*   React js & npm
+*   Django
 *   PostgreSQL Database
 *   Redis In-Memory Database Server
 
