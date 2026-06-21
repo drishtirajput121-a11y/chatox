@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "bash -c 'celery -A chatox worker --loglevel=info --concurrency=2 & celery -A chatox beat --loglevel=info & daphne -b 0.0.0.0 -p $PORT chatox.asgi:application'"
+startCommand = "daphne -b 0.0.0.0 -p $PORT chatox.asgi:application"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
