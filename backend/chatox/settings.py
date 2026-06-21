@@ -150,23 +150,29 @@ REDIS_URL = os.getenv('REDIS_URL')
 IS_REDIS_SSL = REDIS_URL and REDIS_URL.startswith('rediss://')
 
 # ── Cache ──
-if REDIS_URL:
-    cache_options = {'socket_connect_timeout': 5, 'socket_timeout': 5}
-    if IS_REDIS_SSL:
-        cache_options['ssl_cert_reqs'] = ssl.CERT_NONE
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': REDIS_URL,
-            'OPTIONS': cache_options,
-        }
+# if REDIS_URL:
+#     cache_options = {'socket_connect_timeout': 5, 'socket_timeout': 5}
+#     if IS_REDIS_SSL:
+#         cache_options['ssl_cert_reqs'] = ssl.CERT_NONE
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#             'LOCATION': REDIS_URL,
+#             'OPTIONS': cache_options,
+#         }
+#     }
+# else:
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         }
+#     }
+# ── Cache ── (temporary: Upstash limit reached, switch back after July 1)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        }
-    }
+}
 
 # ── Django Channels ──
 if IS_REDIS_SSL:
