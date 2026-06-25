@@ -13,10 +13,15 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # ── Allowed Hosts ──
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.railway.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.railway.app', '.onrender.com']
+
 RAILWAY_PUBLIC_DOMAIN = os.getenv('RAILWAY_PUBLIC_DOMAIN')
 if RAILWAY_PUBLIC_DOMAIN:
     ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # ── Installed Apps ──
 INSTALLED_APPS = [
